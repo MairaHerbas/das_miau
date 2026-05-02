@@ -1,3 +1,12 @@
 <resources>
     <string name="app_name">miau</string>
+    <string name="btn_entrar">Entrar</string>
+    <string name="preg_transporte">¿Cual es su forma de desplazarse?</string>
+    <string name="trans_pie">A pie</string>
+    <string name="trans_bici">Bicicleta</string>
+    <string name="trans_bus">Autobus urbano</string>
+    <string name="trans_tranvia">Tranvia</string>
+    <string name="title_activity_maps">Mapa de Localización</string>
+    <string name="hint_destino">¿A dónde quieres ir?</string>
+    <string name="search_desc">Buscar destino</string>
 </resources>

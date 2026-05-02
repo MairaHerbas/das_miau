@@ -4,9 +4,7 @@ plugins {
 
 android {
     namespace = "com.das.miau"
-    compileSdk {
-        version = release(36)
-    }
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.das.miau"
@@ -38,6 +36,9 @@ dependencies {
     implementation(libs.material)
     implementation(libs.activity)
     implementation(libs.constraintlayout)
+    implementation("org.osmdroid:osmdroid-android:6.1.20")
+    implementation("androidx.preference:preference:1.2.1")
+    implementation(libs.play.services.location)
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
