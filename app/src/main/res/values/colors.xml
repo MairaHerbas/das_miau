@@ -2,4 +2,22 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <!-- Primary Colors -->
+    <color name="blue_primary">#279AF6</color>
+    <color name="blue_primary_dark">#155BA2</color>
+
+    <color name="green_primary">#33A838</color>
+    <color name="green_primary_dark">#1B571E</color>
+
+    <color name="red_primary">#F22424</color>
+    <color name="red_primary_dark">#8A1212</color>
+
+    <color name="pink_primary">#E91E8E</color>
+    <color name="pink_primary_dark">#94145B</color>
+
+    <color name="purple_primary">#991CAF</color>
+    <color name="purple_primary_dark">#591376</color>
+
+    <color name="accent">#ED427C</color>
 </resources>

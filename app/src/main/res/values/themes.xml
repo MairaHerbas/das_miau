@@ -1,9 +1,54 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
     <style name="Base.Theme.Miau" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+        <item name="colorPrimary">@color/blue_primary</item>
+        <item name="colorPrimaryVariant">@color/blue_primary_dark</item>
+        <item name="colorSecondary">@color/accent</item>
     </style>
 
     <style name="Theme.Miau" parent="Base.Theme.Miau" />
+
+    <!-- Light Themes -->
+    <style name="Theme.Miau.Light.Blue" parent="Theme.Material3.Light.NoActionBar">
+        <item name="colorPrimary">@color/blue_primary</item>
+        <item name="colorPrimaryVariant">@color/blue_primary_dark</item>
+    </style>
+    <style name="Theme.Miau.Light.Green" parent="Theme.Material3.Light.NoActionBar">
+        <item name="colorPrimary">@color/green_primary</item>
+        <item name="colorPrimaryVariant">@color/green_primary_dark</item>
+    </style>
+    <style name="Theme.Miau.Light.Red" parent="Theme.Material3.Light.NoActionBar">
+        <item name="colorPrimary">@color/red_primary</item>
+        <item name="colorPrimaryVariant">@color/red_primary_dark</item>
+    </style>
+    <style name="Theme.Miau.Light.Pink" parent="Theme.Material3.Light.NoActionBar">
+        <item name="colorPrimary">@color/pink_primary</item>
+        <item name="colorPrimaryVariant">@color/pink_primary_dark</item>
+    </style>
+    <style name="Theme.Miau.Light.Purple" parent="Theme.Material3.Light.NoActionBar">
+        <item name="colorPrimary">@color/purple_primary</item>
+        <item name="colorPrimaryVariant">@color/purple_primary_dark</item>
+    </style>
+
+    <!-- Dark Themes -->
+    <style name="Theme.Miau.Dark.Blue" parent="Theme.Material3.Dark.NoActionBar">
+        <item name="colorPrimary">@color/blue_primary</item>
+        <item name="colorPrimaryVariant">@color/blue_primary_dark</item>
+    </style>
+    <style name="Theme.Miau.Dark.Green" parent="Theme.Material3.Dark.NoActionBar">
+        <item name="colorPrimary">@color/green_primary</item>
+        <item name="colorPrimaryVariant">@color/green_primary_dark</item>
+    </style>
+    <style name="Theme.Miau.Dark.Red" parent="Theme.Material3.Dark.NoActionBar">
+        <item name="colorPrimary">@color/red_primary</item>
+        <item name="colorPrimaryVariant">@color/red_primary_dark</item>
+    </style>
+    <style name="Theme.Miau.Dark.Pink" parent="Theme.Material3.Dark.NoActionBar">
+        <item name="colorPrimary">@color/pink_primary</item>
+        <item name="colorPrimaryVariant">@color/pink_primary_dark</item>
+    </style>
+    <style name="Theme.Miau.Dark.Purple" parent="Theme.Material3.Dark.NoActionBar">
+        <item name="colorPrimary">@color/purple_primary</item>
+        <item name="colorPrimaryVariant">@color/purple_primary_dark</item>
+    </style>
 </resources>

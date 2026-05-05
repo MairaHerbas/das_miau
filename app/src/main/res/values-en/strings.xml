@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">UniGo</string>
+    <string name="settings">Settings</string>
+    <string name="language">Language</string>
+    <string name="spanish">Spanish</string>
+    <string name="english">English</string>
+    <string name="theme">Theme</string>
+    <string name="light_mode">Light Mode</string>
+    <string name="dark_mode">Dark Mode</string>
+    <string name="primary_color">Primary Color</string>
+    <string name="blue">Blue</string>
+    <string name="green">Green</string>
+    <string name="red">Red</string>
+    <string name="pink">Pink</string>
+    <string name="purple">Purple</string>
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
+    <string name="start_route">Start Route</string>
+    <string name="select_transport">Select Transport</string>
+    <string name="foot">Foot</string>
+    <string name="bike">Bike</string>
+    <string name="bus">Bus</string>
+    <string name="tram">Tram</string>
+    <string name="select_destination">Select Destination</string>
+    <string name="weather_in">"Weather in "</string>
+    <string name="loading_weather">Loading weather...</string>
+    <string name="weather_error">Error loading the weather</string>
+</resources>
