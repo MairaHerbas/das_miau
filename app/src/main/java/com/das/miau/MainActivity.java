@@ -3,14 +3,12 @@ package com.das.miau;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.location.Location;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -29,7 +27,7 @@ import java.util.concurrent.Executors;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends BaseActivity {
 
     private TextView tvCityName, tvWeatherDesc, tvTemps;
     private FusedLocationProviderClient fusedLocationClient;
@@ -39,6 +37,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        setupToolbar();
 
         tvCityName = findViewById(R.id.tvCityName);
         tvWeatherDesc = findViewById(R.id.tvWeatherDesc);
@@ -77,15 +76,13 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    // Mapeo simple de coordenadas a las ciudades del XML
     private String getNearestCity(double lat, double lon) {
-        // Coordenadas aproximadas
         if (lat > 43.2 && lon < -2.5) return "Bilbao";
         if (lat > 43.2 && lon > -2.1) return "Donostia-San Sebastián";
         if (lat < 43.0 && lon < -2.4) return "Vitoria-Gasteiz";
         if (lat < 43.0 && lon > -1.8) return "Pamplona";
         if (lat > 43.0 && lat < 43.15) return "Mondragón";
-        return "Bilbao"; // Por defecto
+        return "Bilbao";
     }
 
     private void fetchWeather(String city) {
@@ -106,7 +103,6 @@ public class MainActivity extends AppCompatActivity {
                         String max = element.getElementsByTagName("tempMax").item(0).getTextContent();
                         String min = element.getElementsByTagName("tempMin").item(0).getTextContent();
                         
-                        // Obtener descripción dentro de <symbol> <es>
                         Element symbol = (Element) element.getElementsByTagName("symbol").item(0);
                         String desc = symbol.getElementsByTagName("es").item(0).getTextContent();
 
@@ -124,7 +120,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void updateUI(String city, String min, String max, String desc) {
         tvCityName.setText(city);
-        tvWeatherDesc.setText(desc);
+        tvWeatherDesc.setText(desc.trim());
         tvTemps.setText("Min: " + min + "ºC | Max: " + max + "ºC");
     }
 

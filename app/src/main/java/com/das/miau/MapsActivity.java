@@ -9,7 +9,6 @@ import android.os.Looper;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.preference.PreferenceManager;
 
@@ -36,7 +35,7 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class MapsActivity extends AppCompatActivity {
+public class MapsActivity extends BaseActivity {
 
     private MapView map = null;
     private MyLocationNewOverlay locationOverlay;
@@ -58,6 +57,7 @@ public class MapsActivity extends AppCompatActivity {
         Configuration.getInstance().setUserAgentValue(getPackageName());
 
         setContentView(R.layout.activity_maps);
+        setupToolbar();
 
         transportMode = getIntent().getStringExtra("TRANSPORT_MODE");
         if (transportMode == null) transportMode = "foot";

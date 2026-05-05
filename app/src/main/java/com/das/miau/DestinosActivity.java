@@ -4,14 +4,13 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Toast;
 
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class DestinosActivity extends AppCompatActivity {
+public class DestinosActivity extends BaseActivity {
 
     private String transportMode;
 
@@ -19,6 +18,7 @@ public class DestinosActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_destinos);
+        setupToolbar();
 
         transportMode = getIntent().getStringExtra("TRANSPORT_MODE");
 
