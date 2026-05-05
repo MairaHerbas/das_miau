@@ -19,8 +19,11 @@
 
         <activity
             android:name=".MapsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".DestinosActivity"
             android:exported="false"
-            android:label="@string/title_activity_maps" />
+            android:label="Seleccionar Destino" />
         <activity
             android:name=".TransportActivity"
             android:exported="false" />

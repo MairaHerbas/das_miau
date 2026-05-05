@@ -2,7 +2,6 @@ package com.das.miau;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.widget.Button;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -23,14 +22,14 @@ public class TransportActivity extends AppCompatActivity {
             return insets;
         });
 
-        findViewById(R.id.btnPie).setOnClickListener(v -> startMapWithMode("foot"));
-        findViewById(R.id.btnBici).setOnClickListener(v -> startMapWithMode("bike"));
-        findViewById(R.id.btnAutobus).setOnClickListener(v -> startMapWithMode("bus"));
-        findViewById(R.id.btnTranvia).setOnClickListener(v -> startMapWithMode("tram"));
+        findViewById(R.id.btnPie).setOnClickListener(v -> startDestinosWithMode("foot"));
+        findViewById(R.id.btnBici).setOnClickListener(v -> startDestinosWithMode("bike"));
+        findViewById(R.id.btnAutobus).setOnClickListener(v -> startDestinosWithMode("bus"));
+        findViewById(R.id.btnTranvia).setOnClickListener(v -> startDestinosWithMode("tram"));
     }
 
-    private void startMapWithMode(String mode) {
-        Intent intent = new Intent(this, MapsActivity.class);
+    private void startDestinosWithMode(String mode) {
+        Intent intent = new Intent(this, DestinosActivity.class);
         intent.putExtra("TRANSPORT_MODE", mode);
         startActivity(intent);
     }

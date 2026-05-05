@@ -6,8 +6,6 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -44,6 +42,8 @@ public class MapsActivity extends AppCompatActivity {
     private MyLocationNewOverlay locationOverlay;
     private FusedLocationProviderClient fusedLocationClient;
     private String transportMode;
+    private String destinoNombre;
+    private double destinoLat, destinoLon;
     private Polyline currentRouteOverlay;
     private GeoPoint userLocation;
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();
@@ -61,22 +61,16 @@ public class MapsActivity extends AppCompatActivity {
 
         transportMode = getIntent().getStringExtra("TRANSPORT_MODE");
         if (transportMode == null) transportMode = "foot";
+        
+        destinoNombre = getIntent().getStringExtra("DESTINO_NOMBRE");
+        destinoLat = getIntent().getDoubleExtra("DESTINO_LAT", 0);
+        destinoLon = getIntent().getDoubleExtra("DESTINO_LON", 0);
 
         map = findViewById(R.id.map);
         map.setTileSource(TileSourceFactory.MAPNIK);
         map.setMultiTouchControls(true);
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-
-        EditText etDestination = findViewById(R.id.etDestination);
-        ImageButton btnSearch = findViewById(R.id.btnSearch);
-
-        btnSearch.setOnClickListener(v -> {
-            String destination = etDestination.getText().toString();
-            if (!destination.isEmpty()) {
-                searchAndRoute(destination);
-            }
-        });
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 101);
@@ -96,12 +90,17 @@ public class MapsActivity extends AppCompatActivity {
                     userLocation = new GeoPoint(location.getLatitude(), location.getLongitude());
                     map.getController().setZoom(15.0);
                     map.getController().setCenter(userLocation);
+
+                    // Calculamos la ruta directamente usando las coordenadas recibidas
+                    if (destinoLat != 0 && destinoLon != 0) {
+                        calculateRoute(new GeoPoint(destinoLat, destinoLon));
+                    }
                 }
             });
         }
     }
 
-    private void searchAndRoute(String destinationName) {
+    private void calculateRoute(GeoPoint destinationPoint) {
         if (userLocation == null) {
             Toast.makeText(this, "Obteniendo tu ubicación...", Toast.LENGTH_SHORT).show();
             return;
@@ -109,27 +108,12 @@ public class MapsActivity extends AppCompatActivity {
 
         executorService.execute(() -> {
             try {
-                String query = destinationName.replace(" ", "+");
-                String geoUrlStr = "https://nominatim.openstreetmap.org/search?q=" + query + "&format=json&limit=1";
-                String geoResponse = downloadUrl(geoUrlStr);
-                JSONArray geoJson = new JSONArray(geoResponse);
-
-                if (geoJson.length() == 0) {
-                    showToast("Destino no encontrado");
-                    return;
-                }
-
-                JSONObject destObj = geoJson.getJSONObject(0);
-                double destLat = destObj.getDouble("lat");
-                double destLon = destObj.getDouble("lon");
-                GeoPoint destinationPoint = new GeoPoint(destLat, destLon);
-
                 String osrmMode = "foot".equals(transportMode) ? "foot" :
                                  "bike".equals(transportMode) ? "bicycle" : "driving";
 
                 String routeUrlStr = "https://router.project-osrm.org/route/v1/" + osrmMode + "/" +
                         userLocation.getLongitude() + "," + userLocation.getLatitude() + ";" +
-                        destLon + "," + destLat + "?overview=full&geometries=geojson";
+                        destinationPoint.getLongitude() + "," + destinationPoint.getLatitude() + "?overview=full&geometries=geojson";
 
                 String routeResponse = downloadUrl(routeUrlStr);
                 JSONObject routeJson = new JSONObject(routeResponse);
@@ -163,16 +147,16 @@ public class MapsActivity extends AppCompatActivity {
                     Marker destMarker = new Marker(map);
                     destMarker.setPosition(destinationPoint);
                     destMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
-                    destMarker.setTitle("Destino: " + destinationName);
+                    destMarker.setTitle(destinoNombre);
                     map.getOverlays().add(destMarker);
 
                     map.invalidate();
-                    Toast.makeText(MapsActivity.this, "Tiempo estimado: " + (int)(duration / 60) + " min", Toast.LENGTH_LONG).show();
+                    Toast.makeText(MapsActivity.this, "Destino: " + destinoNombre + "\nLlegada en: " + (int)(duration / 60) + " min", Toast.LENGTH_LONG).show();
                 });
 
             } catch (Exception e) {
                 e.printStackTrace();
-                showToast("Error de red al buscar ruta");
+                showToast("Error al conectar con el servidor de rutas");
             }
         });
     }
