@@ -26,4 +26,10 @@
     <string name="weather_in">"Weather in "</string>
     <string name="loading_weather">Loading weather...</string>
     <string name="weather_error">Error loading the weather</string>
+
+    <string name="lineas_bus">Bus Lines</string>
+
+    <string name="search_icon_desc">Search icon</string>
+    <string name="selecciona_campus">Select campus</string>
+    <string name="a_pie">On foot</string>
 </resources>

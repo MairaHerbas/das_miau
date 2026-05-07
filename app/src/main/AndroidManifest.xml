@@ -17,6 +17,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Miau">
 
+        <activity android:name=".BusesActivity" />
         <activity
             android:name=".MapsActivity"
             android:exported="false" />

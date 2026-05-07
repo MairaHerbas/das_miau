@@ -12,7 +12,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
 public abstract class BaseActivity extends AppCompatActivity {
-
+//miau jjj
     protected PreferencesManager prefManager;
 
     @Override
@@ -32,6 +32,11 @@ public abstract class BaseActivity extends AppCompatActivity {
             toolbar.setOnMenuItemClickListener(item -> {
                 if (item.getItemId() == R.id.action_settings) {
                     showSettingsDialog();
+                    return true;
+                }
+                else if (item.getItemId() == R.id.action_buses) {
+                    android.content.Intent intent = new android.content.Intent(this, BusesActivity.class);
+                    startActivity(intent);
                     return true;
                 }
                 return false;

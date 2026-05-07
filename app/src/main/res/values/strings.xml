@@ -26,4 +26,12 @@
     <string name="select_destination">Selecciona destino</string>
     <string name="loading_weather">Cargando clima...</string>
     <string name="weather_error">Error al cargar el clima</string>
+    <string name="weather_in">Tiempo en </string>
+
+    <string name="lineas_bus">Líneas de Autobús</string>
+
+    <string name="search_icon_desc">Icono de búsqueda</string>
+    <string name="selecciona_campus">Selecciona campus</string>
+    <string name="a_pie">A pie</string>
+
 </resources>
