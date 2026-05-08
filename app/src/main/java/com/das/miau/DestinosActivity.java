@@ -33,8 +33,6 @@ public class DestinosActivity extends BaseActivity {
 
         List<CentroUniversitario> listaCentros = getListaCentros();
         DestinosAdapter adapter = new DestinosAdapter(listaCentros, centro -> {
-            Toast.makeText(this, "Seleccionado: " + centro.getNombre(), Toast.LENGTH_SHORT).show();
-            
             Intent intent = new Intent(this, MapsActivity.class);
             intent.putExtra("TRANSPORT_MODE", transportMode);
             intent.putExtra("DESTINO_NOMBRE", centro.getNombre());

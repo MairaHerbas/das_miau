@@ -5,9 +5,9 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_margin="16dp"
-    app:cardCornerRadius="12dp"
-    app:cardElevation="8dp"
-    app:strokeColor="?attr/colorPrimary"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="6dp"
+    app:strokeColor="#E0E0E0"
     app:strokeWidth="1dp">
 
     <LinearLayout
@@ -18,59 +18,90 @@
 
         <TextView
             android:id="@+id/tv_destino_card"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Destino: --"
-            android:textSize="16sp"
-            android:textColor="?attr/colorPrimary"
-            android:textStyle="bold"
-            android:layout_marginBottom="4dp"/>
-
-        <TextView
-            android:id="@+id/tv_tiempo_estimado"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Tiempo estimado: -- min"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:textColor="?attr/colorOnSurface" />
-
-        <LinearLayout
-            android:id="@+id/layout_bus_info"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:visibility="gone"
-            android:layout_marginTop="8dp">
+            android:text="Destino"
+            android:textSize="14sp"
+            android:textColor="#757575"
+            android:textAllCaps="true"
+            android:letterSpacing="0.05"
+            android:layout_marginBottom="4dp"/>
 
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:background="#DDDDDD"
-                android:layout_marginBottom="8dp"/>
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp">
 
-            <TextView
-                android:id="@+id/tv_linea_recomendada"
+            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Línea recomendada: --"
-                android:textColor="?attr/colorPrimary"
-                android:textStyle="bold" />
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_alignParentStart="true">
+
+                <TextView
+                    android:id="@+id/tv_linea_numero"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/bg_line_number"
+                    android:text="--"
+                    android:textColor="@android:color/white"
+                    android:textStyle="bold"
+                    android:textSize="18sp"
+                    android:paddingHorizontal="10dp"
+                    android:paddingVertical="4dp"
+                    android:layout_marginEnd="12dp"/>
+
+                <TextView
+                    android:id="@+id/tv_tiempo_total"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="-- min"
+                    android:textSize="22sp"
+                    android:textStyle="bold"
+                    android:textColor="@android:color/black" />
+            </LinearLayout>
 
             <TextView
-                android:id="@+id/tv_parada_origen"
+                android:id="@+id/tv_proximos_buses"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Parada origen: --"
-                android:layout_marginTop="4dp" />
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:text="--'  --'  --'"
+                android:textSize="14sp"
+                android:textColor="#66BB6A"
+                android:textStyle="bold"/>
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
 
             <TextView
-                android:id="@+id/tv_parada_destino"
+                android:id="@+id/tv_ruta_resumen"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Parada destino: --"
-                android:layout_marginTop="4dp" />
-        </LinearLayout>
+                android:layout_alignParentStart="true"
+                android:text="Parada A → Parada B"
+                android:textSize="14sp"
+                android:textColor="#616161"
+                android:maxLines="1"
+                android:ellipsize="end"
+                android:layout_toStartOf="@+id/btn_info_detalles"/>
+
+            <ImageView
+                android:id="@+id/btn_info_detalles"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_alignParentEnd="true"
+                android:src="@drawable/ic_info_outline"
+                android:contentDescription="Info"
+                app:tint="?attr/colorPrimary"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="?attr/selectableItemBackgroundBorderless"/>
+        </RelativeLayout>
 
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

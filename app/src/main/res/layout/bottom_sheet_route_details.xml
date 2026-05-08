@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="24dp"
+    android:background="@android:color/white">
+
+    <View
+        android:layout_width="40dp"
+        android:layout_height="4dp"
+        android:layout_gravity="center_horizontal"
+        android:background="#E0E0E0"
+        android:layout_marginBottom="16dp"/>
+
+    <TextView
+        android:id="@+id/tv_bs_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Línea -- • -- min total"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:textColor="@android:color/black"
+        android:gravity="center"
+        android:layout_marginBottom="24dp"/>
+
+    <!-- Tramo 1: Caminar al origen -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="16dp">
+        <ImageView
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/ic_walk"
+            app:tint="#757575"/>
+        <TextView
+            android:id="@+id/tv_bs_walk_origin"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:text="Camina hasta parada • -- min (--m)"
+            android:textSize="15sp"
+            android:textColor="#616161"/>
+    </LinearLayout>
+
+    <!-- Parada Origen -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="16dp">
+        <ImageView
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/ic_bus_stop"
+            app:tint="?attr/colorPrimary"/>
+        <TextView
+            android:id="@+id/tv_bs_origin_stop"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:text="PARADA ORIGEN"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="@android:color/black"/>
+    </LinearLayout>
+
+    <!-- Espera -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="16dp">
+        <ImageView
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/ic_timer"
+            app:tint="#66BB6A"/>
+        <TextView
+            android:id="@+id/tv_bs_wait_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:text="Espera • -- min"
+            android:textSize="15sp"
+            android:textColor="#616161"/>
+    </LinearLayout>
+
+    <!-- Trayecto Bus -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="16dp">
+        <ImageView
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/ic_bus"
+            app:tint="?attr/colorPrimary"/>
+        <TextView
+            android:id="@+id/tv_bs_ride_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:text="Trayecto en bus • -- min"
+            android:textSize="15sp"
+            android:textColor="#616161"/>
+    </LinearLayout>
+
+    <!-- Parada Destino -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="16dp">
+        <ImageView
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/ic_bus_stop"
+            app:tint="?attr/colorPrimary"/>
+        <TextView
+            android:id="@+id/tv_bs_dest_stop"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:text="PARADA DESTINO"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="@android:color/black"/>
+    </LinearLayout>
+
+    <!-- Caminar al destino -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="24dp">
+        <ImageView
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/ic_walk"
+            app:tint="#757575"/>
+        <TextView
+            android:id="@+id/tv_bs_walk_dest"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:text="Hasta destino • -- min (--m)"
+            android:textSize="15sp"
+            android:textColor="#616161"/>
+    </LinearLayout>
+
+    <View
+        android:id="@+id/divider_bs"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#EEEEEE"
+        android:layout_marginBottom="16dp"/>
+
+    <TextView
+        android:id="@+id/tv_bs_next_buses_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Próximos buses"
+        android:textSize="14sp"
+        android:textColor="#757575"
+        android:layout_marginBottom="8dp"/>
+
+    <TextView
+        android:id="@+id/tv_bs_next_buses_values"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="--'  •  --'  •  --'"
+        android:textSize="18sp"
+        android:textColor="#66BB6A"
+        android:textStyle="bold"/>
+
+</LinearLayout>
