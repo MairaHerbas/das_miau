@@ -40,12 +40,16 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static class CandidateConnection {
         BusStop originStop;
         BusStop destinationStop;
+        float originDistance;
+        float destinationDistance;
         float totalDistance;
 
-        CandidateConnection(BusStop originStop, BusStop destinationStop, float totalDistance) {
+        CandidateConnection(BusStop originStop, BusStop destinationStop, float originDistance, float destinationDistance) {
             this.originStop = originStop;
             this.destinationStop = destinationStop;
-            this.totalDistance = totalDistance;
+            this.originDistance = originDistance;
+            this.destinationDistance = destinationDistance;
+            this.totalDistance = originDistance + destinationDistance;
         }
     }
 
@@ -114,25 +118,22 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     private String normalizeLine(String line) {
         if (line == null) return "";
-        // Quitamos espacios y ceros iniciales, pero mantenemos letras
         return line.trim().toUpperCase().replaceFirst("^0+", "");
     }
 
-    //Detecta si una línea es de tipo Gautxori (servicio nocturno).
+    //Detecta si una línea es de tipo Gautxori (servicio nocturno)
     public boolean isGautxori(String line) {
         if (line == null) return false;
         String n = normalizeLine(line);
         return n.startsWith("G");
     }
 
-    //Detecta si el momento actual está dentro del horario operativo de Gautxori. Viernes y Sábados de 23:00 a 02:30.
+    //Detecta si el momento actual está dentro del horario operativo de Gautxori
     public boolean isNightBusTime() {
         Calendar now = Calendar.getInstance();
         int day = now.get(Calendar.DAY_OF_WEEK);
         int hour = now.get(Calendar.HOUR_OF_DAY);
         int minute = now.get(Calendar.MINUTE);
-        // Viernes noche (Viernes 23:00 - Sábado 02:30)
-        // Sábado noche (Sábado 23:00 - Domingo 02:30)
         if (day == Calendar.FRIDAY) {
             return hour >= 23;
         } else if (day == Calendar.SATURDAY) {
@@ -146,7 +147,78 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return false;
     }
 
-    //Busca paradas cercanas y las devuelve ordenadas por distancia.
+    // Convierte tiempo GTFS (HH:mm:ss) a segundos. Soporta > 24h
+    private long getGtfSeconds(String gtfsTime) {
+        if (gtfsTime == null) return -1;
+        try {
+            String[] parts = gtfsTime.split(":");
+            if (parts.length < 2) return -1;
+            int h = Integer.parseInt(parts[0].trim());
+            int m = Integer.parseInt(parts[1].trim());
+            int s = parts.length > 2 ? Integer.parseInt(parts[2].trim()) : 0;
+            return h * 3600L + m * 60L + s;
+        } catch (Exception e) {
+            return -1;
+        }
+    }
+
+    // Obtiene el próximo horario válido GTFS para una conexión
+    // Implementa normalización de tiempos y validación de dirección (stop_sequence)
+    private long[] getTripTiming(String originStopId, String destinationStopId, String line, String network, long minDepartureTime, long currentSecs) {
+        openDatabase();
+        String tableSuffix = network.equalsIgnoreCase("bizkaibus") ? "_bizkaibus_limpio" : "_bilbobus_limpio";
+
+        // El SQL ya filtra por dirección correcta usando stop_sequence
+        String sql = "SELECT st1.departure_time, st2.arrival_time " +
+                "FROM stop_times" + tableSuffix + " st1 " +
+                "JOIN stop_times" + tableSuffix + " st2 ON st1.trip_id = st2.trip_id " +
+                "JOIN trips" + tableSuffix + " t ON st1.trip_id = t.trip_id " +
+                "JOIN routes" + tableSuffix + " r ON t.route_id = r.route_id " +
+                "WHERE st1.stop_id = ? " +
+                "AND st2.stop_id = ? " +
+                "AND st1.stop_sequence < st2.stop_sequence " +
+                "AND r.route_short_name = ? ";
+
+        long bestDep = -1;
+        long bestArr = -1;
+        long minWait = Long.MAX_VALUE;
+
+        try (Cursor cursor = database.rawQuery(sql, new String[]{originStopId, destinationStopId, line})) {
+            while (cursor.moveToNext()) {
+                long depSecs = getGtfSeconds(cursor.getString(0));
+                long arrSecs = getGtfSeconds(cursor.getString(1));
+
+                if (depSecs == -1 || arrSecs == -1) continue;
+
+                // NORMALIZACIÓN GTFS
+                if (depSecs < currentSecs) {
+                    depSecs += 86400;
+                    arrSecs += 86400;
+                }
+
+                // Asegurar que la llegada es siempre posterior a la salida
+                if (arrSecs < depSecs) arrSecs += 86400;
+
+                long waitTime = depSecs - minDepartureTime;
+                
+                // Buscar la próxima salida válida
+                if (waitTime >= 0 && waitTime < minWait) {
+                    minWait = waitTime;
+                    bestDep = depSecs;
+                    bestArr = arrSecs;
+                }
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error en getTripTiming", e);
+        }
+        
+        if (bestDep != -1) {
+            return new long[]{bestDep, bestArr};
+        }
+        return null;
+    }
+
+    //Busca paradas cercanas y las devuelve ordenadas por distancia
     public List<NearbyStop> getNearbyStops(double lat, double lon) {
         List<NearbyStop> stops = new ArrayList<>();
         openDatabase();
@@ -172,7 +244,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
                 if (dist[0] < 500) {
                     BusStop stop = new BusStop(id, name, sLat, sLon);
-                    stop.setNetwork(red); // Guardamos la red para validaciones posteriores
+                    stop.setNetwork(red); // Guardar la red para validaciones posteriores
                     stop.setLines(getLinesForStop(id, red));
                     stops.add(new NearbyStop(stop, dist[0]));
                     Log.d(TAG, "   [CANDIDATA] " + name + " (" + red + ") a " + (int)dist[0] + "m. Líneas: " + stop.getLines());
@@ -206,7 +278,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return lines;
     }
 
-    //Valida si un autobús va realmente del origen al destino comprobando stop_sequence en GTFS.
+    //Valida si un autobús va realmente del origen al destino comprobando stop_sequence en GTFS
     private boolean isCorrectDirection(String originStopId, String destinationStopId, String line, String red) {
         openDatabase();
         String table = red.equalsIgnoreCase("bizkaibus") ? "_bizkaibus_limpio" : "_bilbobus_limpio";
@@ -238,7 +310,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     public BusConnection findBusConnection(double oLat, double oLon, double dLat, double dLon, boolean allowNightBus) {
-        Log.d(TAG, "========== BÚSQUEDA DE MEJOR CONEXIÓN (NightBus=" + allowNightBus + ") ==========");
+        Log.d(TAG, "========== BÚSQUEDA DE MEJOR CONEXIÓN (DIRECCIÓN + TIEMPO REAL) ==========");
         List<NearbyStop> oStops = getNearbyStops(oLat, oLon);
         List<NearbyStop> dStops = getNearbyStops(dLat, dLon);
 
@@ -247,55 +319,107 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             return null;
         }
 
-        List<CandidateConnection> candidates = new ArrayList<>();
+        List<CandidateConnection> pairs = new ArrayList<>();
         for (NearbyStop os : oStops) {
             for (NearbyStop ds : dStops) {
-                candidates.add(new CandidateConnection(os.stop, ds.stop, os.distance + ds.distance));
+                pairs.add(new CandidateConnection(os.stop, ds.stop, os.distance, ds.distance));
             }
         }
 
-        Collections.sort(candidates, new Comparator<CandidateConnection>() {
+        // Ordenar inicialmente por distancia geográfica total
+        Collections.sort(pairs, new Comparator<CandidateConnection>() {
             @Override
             public int compare(CandidateConnection c1, CandidateConnection c2) {
                 return Float.compare(c1.totalDistance, c2.totalDistance);
             }
         });
 
-        for (CandidateConnection cand : candidates) {
+        // Clase local para evaluar el tiempo total de una ruta
+        class RouteOption {
+            BusConnection connection;
+            double totalTime;
+            RouteOption(BusConnection c, double t) { this.connection = c; this.totalTime = t; }
+        }
+
+        List<RouteOption> options = new ArrayList<>();
+        Calendar now = Calendar.getInstance();
+        long currentSecs = now.get(Calendar.HOUR_OF_DAY) * 3600L + now.get(Calendar.MINUTE) * 60L + now.get(Calendar.SECOND);
+        double walkSpeed = 1.2; // m/s
+
+        int candidatesChecked = 0;
+        for (CandidateConnection cand : pairs) {
+            // Solo evaluar máximo 15 combinaciones de paradas más cercanas
+            if (candidatesChecked >= 15 && !options.isEmpty()) break;
+
             BusStop oStop = cand.originStop;
             BusStop dStop = cand.destinationStop;
 
-            // Deben pertenecer a la misma red para que la línea coincida
             if (oStop.getNetwork() == null || !oStop.getNetwork().equals(dStop.getNetwork())) {
                 continue;
             }
 
             for (String oL : oStop.getLines()) {
                 String nO = normalizeLine(oL);
-                if (nO.isEmpty()) continue;
+                if (nO.isEmpty() || (!allowNightBus && isGautxori(nO))) continue;
 
-                // Si no permitimos buses nocturnos y la línea es Gautxori, ignorar
-                if (!allowNightBus && isGautxori(nO)) {
-                    continue;
-                }
+                // Solo considerar si la línea llega al destino
+                if (dStop.getLines().contains(oL)) {
+                    candidatesChecked++;
+                    double walkToOrigin = cand.originDistance / walkSpeed;
+                    double walkToDest = cand.destinationDistance / walkSpeed;
 
-                for (String dL : dStop.getLines()) {
-                    if (nO.equals(normalizeLine(dL))) {
+                    // Buscar el PRÓXIMO viaje real en GTFS (getTripTiming valida dirección y normaliza tiempo)
+                    long[] timings = getTripTiming(oStop.getStopId(), dStop.getStopId(), oL, oStop.getNetwork(), (long)(currentSecs + walkToOrigin), currentSecs);
 
-                        // Validación dirección del trayecto
-                        if (!isCorrectDirection(oStop.getStopId(), dStop.getStopId(), oL, oStop.getNetwork())) {
-                            continue;
+                    if (timings != null) {
+                        long depSecs = timings[0];
+                        long arrSecs = timings[1];
+
+                        long arrivalAtStop = currentSecs + (long) walkToOrigin;
+                        // waitTime = tiempo desde que llegas a la parada hasta que sale el bus
+                        long waitTime = Math.max(0, depSecs - arrivalAtStop);
+                        // rideTime = tiempo dentro del bus
+                        long rideTime = arrSecs >= depSecs ? arrSecs - depSecs : arrSecs + 86400 - depSecs;
+                        
+                        // TOTAL_TIME = caminar_origen + espera + bus + caminar_destino
+                        double totalTime = walkToOrigin + waitTime + rideTime + walkToDest;
+
+                        Log.d(TAG, "   [GTFS TRIP CHECK] Línea " + oL + ": " + oStop.getStopName() + " -> " + dStop.getStopName());
+                        Log.d(TAG, "   [NEXT DEPARTURE FOUND] " + (depSecs/3600) + ":" + String.format("%02d", (depSecs%3600)/60) + " (Espera: " + (waitTime/60) + " min)");
+                        Log.d(TAG, "   [TOTAL TIME CALCULATED] " + (int)totalTime + "s");
+
+                        options.add(new RouteOption(new BusConnection(oL, oStop, dStop), totalTime));
+                    } else {
+                        // Fallback: si no hay horarios pero la dirección es correcta
+                        if (isCorrectDirection(oStop.getStopId(), dStop.getStopId(), oL, oStop.getNetwork())) {
+                            // Penalizamos la falta de horario dándole un tiempo estimado alto basado en distancia
+                            double estimatedTime = 1000000 + cand.totalDistance * 10;
+                            options.add(new RouteOption(new BusConnection(oL, oStop, dStop), estimatedTime));
+                            Log.d(TAG, "   [GTFS TRIP CHECK] Sin horario para " + oL + ". Usando fallback espacial.");
                         }
-
-                        Log.d(TAG, "!!! CONEXIÓN ÉXITOSA !!! Línea: " + oL + " entre " + oStop.getStopName() + " y " + dStop.getStopName());
-                        return new BusConnection(oL, oStop, dStop);
                     }
                 }
             }
+            // Limitar a las mejores opciones finales para comparar
+            if (options.size() >= 5) break; 
         }
 
-        Log.d(TAG, "========== SIN CONEXIÓN DIRECTA ENCONTRADA ==========");
-        return null;
+        if (options.isEmpty()) {
+            Log.d(TAG, "========== SIN CONEXIÓN DIRECTA ENCONTRADA ==========");
+            return null;
+        }
+
+        // SELECCIÓN DE MEJOR RUTA: Ranking por tiempo real (la que llega antes gana)
+        Collections.sort(options, new Comparator<RouteOption>() {
+            @Override
+            public int compare(RouteOption o1, RouteOption o2) {
+                return Double.compare(o1.totalTime, o2.totalTime);
+            }
+        });
+
+        BusConnection best = options.get(0).connection;
+        Log.d(TAG, "!!! CONEXIÓN ÉXITOSA !!! Mejor ruta: " + best.getLine() + " (Tiempo total est: " + (int)options.get(0).totalTime + "s)");
+        return best;
     }
 
     public List<RutaBus> getLineasBilbobus() {
