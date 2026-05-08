@@ -1,282 +1,209 @@
 [
     {
         "universidad": "EHU",
-        "centro": "Escuela de Ingeniería de Bilbao",
-        "codigo_ehu": "345",
-        "ubicacion_original": "Edif II",
+        "centro": "Escuela de Ingeniería de Bilbao Edificio I",
+        "ubicacion": "Bilbao",
         "coordenadas": {
-            "latitud": 43.2627309,
-            "longitud": -2.949398
+            "latitud": 43.2627363120995,
+            "longitud": -2.949407232061388
         }
     },
     {
         "universidad": "EHU",
-        "centro": "Escuela de Ingeniería de Bilbao (Náutica)",
-        "codigo_ehu": "350",
-        "ubicacion_original": "Náutica",
+        "centro": "Escuela de Ingeniería de Bilbao Edificio II",
+        "ubicacion": "Bilbao",
         "coordenadas": {
-            "latitud": 43.3182479,
-            "longitud": -3.0211969
+            "latitud": 43.26334695434439,
+            "longitud": -2.950252858753442
         }
     },
     {
         "universidad": "EHU",
-        "centro": "Escuela de Ingeniería de Bilbao",
-        "codigo_ehu": "363",
-        "ubicacion_original": "Edif II",
+        "centro": "Escuela de Ingeniería de Bilbao Edificio Náutica",
+        "ubicacion": "Portugalete",
         "coordenadas": {
-            "latitud": 43.2627309,
-            "longitud": -2.949398
-        }
-    },
-    {
-        "universidad": "EHU",
-        "centro": "Escuela de Ingeniería de Bilbao",
-        "codigo_ehu": "364",
-        "ubicacion_original": "Edif II",
-        "coordenadas": {
-            "latitud": 43.2627309,
-            "longitud": -2.949398
+            "latitud": 43.326902400000016,
+            "longitud": -3.0227318000235543
         }
     },
     {
         "universidad": "EHU",
         "centro": "Facultad de Bellas Artes",
-        "codigo_ehu": "320",
-        "ubicacion_original": "Leioa",
+        "ubicacion": "Leioa",
         "coordenadas": {
-            "latitud": 43.3311325,
-            "longitud": -2.9731452
+            "latitud": 43.331147405281776,
+            "longitud": -2.9731440259314432
         }
     },
     {
         "universidad": "EHU",
         "centro": "Facultad de Ciencia y Tecnología",
-        "codigo_ehu": "310",
-        "ubicacion_original": "Leioa",
+        "ubicacion": "Leioa",
         "coordenadas": {
-            "latitud": 43.3307618,
-            "longitud": -2.9700389
+            "latitud": 43.330760638874615,
+            "longitud": -2.9700380139524176
         }
     },
     {
         "universidad": "EHU",
         "centro": "Facultad de Ciencias Sociales y Comunicación",
-        "codigo_ehu": "323",
-        "ubicacion_original": "Leioa",
+        "ubicacion": "Leioa",
         "coordenadas": {
-            "latitud": 43.3314799,
-            "longitud": -2.9674335
+            "latitud": 43.33148457713639,
+            "longitud": -2.9674339108502132
         }
     },
     {
         "universidad": "EHU",
-        "centro": "Facultad de Derecho. Sección bizkaia",
-        "codigo_ehu": "324",
-        "ubicacion_original": "Leioa",
+        "centro": "Facultad de Derecho",
+        "ubicacion": "Leioa",
         "coordenadas": {
-            "latitud": 43.3246703,
-            "longitud": -2.9854477
+            "latitud": 43.330992718356114,
+            "longitud": -2.9656974547163495
         }
     },
     {
         "universidad": "EHU",
         "centro": "Facultad de Economía y Empresa",
-        "codigo_ehu": "321",
-        "ubicacion_original": "Sarriko",
+        "ubicacion": "Sarriko",
         "coordenadas": {
-            "latitud": 43.2734089,
-            "longitud": -2.9586753
+            "latitud": 43.273409411285776,
+            "longitud": -2.958675881749486
         }
     },
     {
         "universidad": "EHU",
         "centro": "Facultad de Economía y Empresa. Sección Elkano",
-        "codigo_ehu": "351",
-        "ubicacion_original": "Bilbao",
+        "ubicacion": "Bilbao",
         "coordenadas": {
-            "latitud": 43.2600996,
-            "longitud": -2.9331135
+            "latitud": 43.260101515788286,
+            "longitud": -2.933114186402578
         }
     },
     {
         "universidad": "EHU",
         "centro": "Facultad de Educación de Bilbao",
-        "codigo_ehu": "354",
-        "ubicacion_original": "Leioa",
+        "ubicacion": "Leioa",
         "coordenadas": {
-            "latitud": 43.33305230000001,
-            "longitud": -2.9727137
+            "latitud": 43.33305408769437,
+            "longitud": -2.972720529918126
         }
     },
     {
         "universidad": "EHU",
         "centro": "Facultad de Medicina y Enfermería",
-        "codigo_ehu": "327",
-        "ubicacion_original": "Leioa",
+        "ubicacion": "Leioa",
         "coordenadas": {
-            "latitud": 43.3294658,
-            "longitud": -2.9658724
+            "latitud": 43.32947045019163,
+            "longitud": -2.965872609627126
         }
     },
     {
         "universidad": "EHU",
-        "centro": "Facultad de Medicina y Enfermería",
-        "codigo_ehu": "352",
-        "ubicacion_original": "Leioa",
+        "centro": "Unidad Docente Medicina - Galdakao",
+        "ubicacion": "Galdakao",
         "coordenadas": {
-            "latitud": 43.3294658,
-            "longitud": -2.9658724
+            "latitud": 43.223428019813404,
+            "longitud": -2.8179111089534383
         }
     },
     {
         "universidad": "EHU",
-        "centro": "Unidad Docente Medicina y Enfermería",
-        "codigo_ehu": "332",
-        "ubicacion_original": "Galdakao",
+        "centro": "Unidad Docente Medicina - Basurto",
+        "ubicacion": "Bilbao",
         "coordenadas": {
-            "latitud": 43.2234469,
-            "longitud": -2.8179267
+            "latitud": 43.26099953694176,
+            "longitud": -2.951380476431241
         }
     },
     {
         "universidad": "EHU",
-        "centro": "Unidad Docente Medicina y Enfermería",
-        "codigo_ehu": "328",
-        "ubicacion_original": "Bilbao",
+        "centro": "Unidad Docente Medicina - Cruces",
+        "ubicacion": "Cruces",
         "coordenadas": {
-            "latitud": 43.2615543,
-            "longitud": -2.9529421
-        }
-    },
-    {
-        "universidad": "EHU",
-        "centro": "Unidad Docente Medicina y Enfermería",
-        "codigo_ehu": "329",
-        "ubicacion_original": "Cruces",
-        "coordenadas": {
-            "latitud": 43.2825571,
-            "longitud": -2.9843738
+            "latitud": 43.28256601694907,
+            "longitud": -2.98438082949724
         }
     },
     {
         "universidad": "EHU",
         "centro": "Aulas de la Experiencia",
-        "codigo_ehu": null,
-        "ubicacion_original": "Bilbao",
+        "ubicacion": "Bilbao",
         "coordenadas": {
-            "latitud": 43.2577895,
-            "longitud": -2.9231478
+            "latitud": 43.25778899843017,
+            "longitud": -2.9231484716201708
         }
     },
     {
-        "universidad": "Mondragon",
-        "centro": "Bilbao Berrikuntza Faktoria (BBF): Facultad de Empresariales",
-        "codigo_ehu": null,
-        "ubicacion_original": "Uribitarte, 6",
+        "universidad": "MONDRAGON",
+        "centro": "Bilbao Berrikuntza Faktoria (BBF)",
+        "ubicacion": "Bilbao",
         "coordenadas": {
-            "latitud": 43.2644157,
-            "longitud": -2.9271435
+            "latitud": 43.2644152135323,
+            "longitud": -2.9271438253439004
         }
     },
     {
-        "universidad": "Mondragon",
-        "centro": "BBF: LEINN (Liderazgo Emprendedor e Innovación)",
-        "codigo_ehu": null,
-        "ubicacion_original": "Uribitarte, 6",
+        "universidad": "MONDRAGON",
+        "centro": "As Fabrik: Zorrotzaurre",
+        "ubicacion": "Bilbao",
         "coordenadas": {
-            "latitud": 43.2644157,
-            "longitud": -2.9271435
-        }
-    },
-    {
-        "universidad": "Mondragon",
-        "centro": "As Fabrik: Escuela Politécnica Superior",
-        "codigo_ehu": null,
-        "ubicacion_original": "Zorrotzaurre",
-        "coordenadas": {
-            "latitud": 43.2719286,
+            "latitud": 43.27192748361638,
             "longitud": -2.9639685
         }
     },
     {
-        "universidad": "Mondragon",
-        "centro": "As Fabrik: Facultad de Humanidades y Ciencias de la Educación",
-        "codigo_ehu": null,
-        "ubicacion_original": "Zorrotzaurre",
+        "universidad": "DEUSTO",
+        "centro": "Deusto Business School",
+        "ubicacion": "Deusto",
         "coordenadas": {
-            "latitud": 43.2719286,
-            "longitud": -2.9639685
+            "latitud": 43.27120414694327,
+            "longitud": -2.939702686790459
         }
     },
     {
-        "universidad": "Deusto",
-        "centro": "Deustu Business School",
-        "codigo_ehu": null,
-        "ubicacion_original": "Deusto",
-        "coordenadas": {
-            "latitud": 43.2712346,
-            "longitud": -2.9397042
-        }
-    },
-    {
-        "universidad": "Deusto",
+        "universidad": "DEUSTO",
         "centro": "Facultad de Derecho",
-        "codigo_ehu": null,
-        "ubicacion_original": "Deusto",
+        "ubicacion": "Deusto",
         "coordenadas": {
-            "latitud": 43.2712379,
-            "longitud": -2.9397068
+            "latitud": 43.27053079157015,
+            "longitud": -2.936470292003417
         }
     },
     {
-        "universidad": "Deusto",
+        "universidad": "DEUSTO",
         "centro": "Facultad de Ciencias Sociales y Humanas",
-        "codigo_ehu": null,
-        "ubicacion_original": "Deusto",
+        "ubicacion": "Deusto",
         "coordenadas": {
-            "latitud": 43.2712379,
-            "longitud": -2.9397068
+            "latitud": 43.270514592228494,
+            "longitud": -2.936464505171852
         }
     },
     {
-        "universidad": "Deusto",
+        "universidad": "DEUSTO",
         "centro": "Facultad de Ingeniería",
-        "codigo_ehu": null,
-        "ubicacion_original": "Deusto",
+        "ubicacion": "Deusto",
         "coordenadas": {
-            "latitud": 43.2712379,
-            "longitud": -2.9397068
+            "latitud": 43.27181329907745,
+            "longitud": -2.9397152537821767
         }
     },
     {
-        "universidad": "Deusto",
+        "universidad": "DEUSTO",
         "centro": "Facultad de Educación y Deporte",
-        "codigo_ehu": null,
-        "ubicacion_original": "Deusto",
+        "ubicacion": "Deusto",
         "coordenadas": {
-            "latitud": 43.2712379,
-            "longitud": -2.9397068
+            "latitud": 43.2705247668362,
+            "longitud": -2.9364613155356936
         }
     },
     {
-        "universidad": "Deusto",
+        "universidad": "DEUSTO",
         "centro": "Facultad de Ciencias de la Salud",
-        "codigo_ehu": null,
-        "ubicacion_original": "Deusto",
+        "ubicacion": "Deusto",
         "coordenadas": {
-            "latitud": 43.2712379,
-            "longitud": -2.9397068
-        }
-    },
-    {
-        "universidad": "Deusto",
-        "centro": "Facultad de Ciencias Sociales y Comunicación",
-        "codigo_ehu": null,
-        "ubicacion_original": "Deusto",
-        "coordenadas": {
-            "latitud": 43.2712379,
-            "longitud": -2.9397068
+            "latitud": 43.2705247668362,
+            "longitud": -2.9364613155356936
         }
     }
 ]
