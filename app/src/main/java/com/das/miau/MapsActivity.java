@@ -144,7 +144,6 @@ public class MapsActivity extends BaseActivity {
                 BusConnection connection = null;
 
                 if ("bus".equals(transportMode)) {
-                    // Búsqueda de conexión basada 100% en GTFS Real (incluyendo calendario)
                     connection = dbHelper.findBusConnection(
                             userLocation.getLatitude(), userLocation.getLongitude(),
                             destinationPoint.getLatitude(), destinationPoint.getLongitude()
@@ -213,9 +212,9 @@ public class MapsActivity extends BaseActivity {
             segments.add(r1.points);
             segments.add(busPoints);
             segments.add(r3.points);
-            totalDurationSec = r1.duration + busDuration + r3.duration;
+            totalDurationSec = connection.getTotalTimeSec();
         } else {
-            String osrmMode = "bike".equals(transportMode) ? "bicycle" : 
+            String osrmMode = "bike".equals(transportMode) ? "bicycle" :
                              "bus".equals(transportMode) ? "driving" : "foot";
             
             RouteResult result = fetchOSRMRoute(userLocation, destinationPoint, osrmMode);
@@ -280,7 +279,7 @@ public class MapsActivity extends BaseActivity {
             addPolyline(segments.get(2), Color.GRAY);
 
             // Marcadores de paradas
-            addMarker(new GeoPoint(connection.getOriginStop().getLat(), connection.getOriginStop().getLon()), 
+            addMarker(new GeoPoint(connection.getOriginStop().getLat(), connection.getOriginStop().getLon()),
                      "Subir: " + connection.getOriginStop().getStopName(), 
                      "Línea " + connection.getLine());
             
@@ -292,14 +291,14 @@ public class MapsActivity extends BaseActivity {
             allPointsForCamera.add(new GeoPoint(connection.getDestinationStop().getLat(), connection.getDestinationStop().getLon()));
 
             layoutBusInfo.setVisibility(View.VISIBLE);
-            
+
             tvLineaRecomendada.setText("Línea recomendada: " + connection.getLine());
             tvParadaOrigen.setText("Parada origen: " + connection.getOriginStop().getStopName());
             tvParadaDestino.setText("Parada destino: " + connection.getDestinationStop().getStopName());
         } else {
             // Ruta única
             if (!segments.isEmpty()) {
-                addPolyline(segments.get(0), 0xFF279AF6);
+                addPolyline(segments.get(0), Color.BLUE);
             }
             layoutBusInfo.setVisibility("bus".equals(transportMode) ? View.VISIBLE : View.GONE);
             if ("bus".equals(transportMode)) {

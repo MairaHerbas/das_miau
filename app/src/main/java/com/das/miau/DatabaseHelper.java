@@ -176,10 +176,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
                 if (depSecs == -1 || arrSecs == -1) continue;
 
-                // NORMALIZACIÓN GTFS
-                if (depSecs < currentSecs) {
-                    depSecs += 86400;
-                    arrSecs += 86400;
+                if (depSecs < minDepartureTime) {
+                    continue;
                 }
 
                 // Asegurar que la llegada es siempre posterior a la salida
@@ -228,7 +226,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 float[] dist = new float[1];
                 Location.distanceBetween(lat, lon, sLat, sLon, dist);
 
-                if (dist[0] < 500) {
+                if (dist[0] < 500) { // Buscar paradas cercanas en un radio de 500m
                     BusStop stop = new BusStop(id, name, sLat, sLon);
                     stop.setNetwork(red); // Guardar la red para validaciones posteriores
                     stop.setLines(getLinesForStop(id, red));
@@ -358,7 +356,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     double walkToOrigin = cand.originDistance / walkSpeed;
                     double walkToDest = cand.destinationDistance / walkSpeed;
 
-                    // Buscar el PRÓXIMO viaje real en GTFS (getTripTiming valida dirección, calendario y normaliza tiempo)
+                    // Buscar el próximo viaje real en GTFS (getTripTiming valida dirección, calendario y normaliza tiempo)
                     long[] timings = getTripTiming(oStop.getStopId(), dStop.getStopId(), oL, oStop.getNetwork(), (long)(currentSecs + walkToOrigin), currentSecs);
 
                     if (timings != null) {
@@ -379,7 +377,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                         Log.d(TAG, "   [TOTAL TIME] walkToOrigin: " + (walkToOrigin/60) + "min. waitTime: " + (waitTime/60) + "min. rideTime: " + (rideTime/60) + "min. walkToDest: " + (walkToDest/60) + "min.");
                         Log.d(TAG, "   [TOTAL TIME CALCULATED] " + (int)totalTime + "s = " + (int)(totalTime/60) + "min.");
 
-                        options.add(new RouteOption(new BusConnection(oL, oStop, dStop), totalTime));
+                        BusConnection bc = new BusConnection(oL, oStop, dStop);
+                        bc.setTotalTimeSec(totalTime);
+                        options.add(new RouteOption(bc, totalTime));
                     }
                 }
             }
@@ -538,7 +538,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public double getBusDuration(String originStopId, String destinationStopId, String line, String network) {
         Calendar now = Calendar.getInstance();
         long currentSecs = now.get(Calendar.HOUR_OF_DAY) * 3600L + now.get(Calendar.MINUTE) * 60L + now.get(Calendar.SECOND);
-        long[] timings = getTripTiming(originStopId, destinationStopId, line, network, 0, currentSecs);
+        long[] timings = getTripTiming(originStopId, destinationStopId, line, network, currentSecs, currentSecs);
         if (timings != null) {
             long duration = timings[1] - timings[0];
             if (duration < 0) duration += 86400; // Ajuste por cambio de día
