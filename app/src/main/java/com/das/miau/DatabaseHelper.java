@@ -203,6 +203,51 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return null;
     }
 
+    // Obtener próximos buses
+    public List<Long> getNextDepartures(String originStopId, String destinationStopId, String line, String network, long minDepartureTime) {
+        openDatabase();
+        String tableSuffix = network.equalsIgnoreCase("bizkaibus") ? "_bizkaibus_limpio" : "_bilbobus_limpio";
+        Calendar now = Calendar.getInstance();
+        long currentSecs = now.get(Calendar.HOUR_OF_DAY) * 3600L + now.get(Calendar.MINUTE) * 60L + now.get(Calendar.SECOND);
+        String[] days = {"sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"};
+        String todayWeekday = days[now.get(Calendar.DAY_OF_WEEK) - 1];
+        String todayDate = String.format("%04d%02d%02d", now.get(Calendar.YEAR), now.get(Calendar.MONTH) + 1, now.get(Calendar.DAY_OF_MONTH));
+
+        String sql = "SELECT st1.departure_time " +
+                "FROM stop_times" + tableSuffix + " st1 " +
+                "JOIN stop_times" + tableSuffix + " st2 ON st1.trip_id = st2.trip_id " +
+                "JOIN trips" + tableSuffix + " t ON st1.trip_id = t.trip_id " +
+                "JOIN routes" + tableSuffix + " r ON t.route_id = r.route_id " +
+                "LEFT JOIN calendar" + tableSuffix + " c ON t.service_id = c.service_id " +
+                "LEFT JOIN calendar_dates" + tableSuffix + " cd ON t.service_id = cd.service_id AND cd.date = ? " +
+                "WHERE st1.stop_id = ? " +
+                "AND st2.stop_id = ? " +
+                "AND CAST(st1.stop_sequence AS INTEGER) < CAST(st2.stop_sequence AS INTEGER) " +
+                "AND r.route_short_name = ? " +
+                "AND (" +
+                "  (cd.exception_type = '1') OR " +
+                "  (c." + todayWeekday + " = '1' AND ? BETWEEN c.start_date AND c.end_date AND (cd.exception_type IS NULL OR cd.exception_type != '2'))" +
+                ") " +
+                "ORDER BY st1.departure_time ASC";
+
+        List<Long> departures = new ArrayList<>();
+        try (Cursor cursor = database.rawQuery(sql, new String[]{todayDate, originStopId, destinationStopId, line, todayDate})) {
+            while (cursor.moveToNext() && departures.size() < 3) {
+                long depSecs = getGtfSeconds(cursor.getString(0));
+                if (depSecs == -1) continue;
+                if (depSecs < currentSecs) continue; 
+                
+                long waitMin = (depSecs - currentSecs) / 60;
+                if (waitMin >= 0 && waitMin <= 45) {
+                    departures.add(waitMin);
+                }
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error en getNextDepartures", e);
+        }
+        return departures;
+    }
+
     //Busca paradas cercanas y las devuelve ordenadas por distancia
     public List<NearbyStop> getNearbyStops(double lat, double lon) {
         List<NearbyStop> stops = new ArrayList<>();
@@ -380,6 +425,16 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
                         BusConnection bc = new BusConnection(oL, oStop, dStop);
                         bc.setTotalTimeSec(totalTime);
+                        
+                        // Guardar datos detallados para la UI
+                        bc.setWalkToOriginSec(walkToOrigin);
+                        bc.setWaitTimeSec(waitTime);
+                        bc.setRideTimeSec(rideTime);
+                        bc.setWalkToDestSec(walkToDest);
+                        bc.setWalkOriginMeters(cand.originDistance);
+                        bc.setWalkDestMeters(cand.destinationDistance);
+                        bc.setNextDeparturesMin(getNextDepartures(oStop.getStopId(), dStop.getStopId(), oL, oStop.getNetwork(), (long)(currentSecs + walkToOrigin)));
+
                         options.add(new RouteOption(bc, totalTime));
                     }
                 }
@@ -488,8 +543,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         // PASO 1: Encontrar el punto más cercano al origen en TODA la lista
         for (int i = 0; i < allPoints.size(); i++) {
-            float dist = getDistance(origin.getLat(), origin.getLon(), allPoints.get(i));
-            if (dist < minDistanceOrigin) {
+            float dist = getFastDistanceMeters(origin.getLat(), origin.getLon(), allPoints.get(i).getLatitude(), allPoints.get(i).getLongitude());            if (dist < minDistanceOrigin) {
                 minDistanceOrigin = dist;
                 startIndex = i;
             }
@@ -528,6 +582,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
 
         return null;
+    }
+
+    // Distancia rápida aproximada
+    private float getFastDistanceMeters(double lat1, double lon1, double lat2, double lon2) {
+        double dLat = lat1 - lat2;
+        double dLon = lon1 - lon2;
+        return (float) (Math.sqrt((dLat * dLat) + (dLon * dLon)) * 111000);
     }
 
     private float getDistance(double lat, double lon, GeoPoint gp) {

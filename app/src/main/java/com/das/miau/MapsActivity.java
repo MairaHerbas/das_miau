@@ -9,7 +9,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 import android.view.View;
-import android.widget.LinearLayout;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -19,7 +19,7 @@ import androidx.preference.PreferenceManager;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -58,9 +58,10 @@ public class MapsActivity extends BaseActivity {
     private List<Marker> routeMarkers = new ArrayList<>();
 
     // UI Card Elements
-    private TextView tvDestinoCard, tvTiempoEstimado, tvLineaRecomendada, tvParadaOrigen, tvParadaDestino;
-    private LinearLayout layoutBusInfo;
+    private TextView tvDestinoCard, tvTiempoTotal, tvLineaNumero, tvProximosBuses, tvRutaResumen;
+    private ImageView btnInfoDetalles;
     private DatabaseHelper dbHelper;
+    private BusConnection lastConnection;
 
     private static class RouteResult {
         List<GeoPoint> points;
@@ -86,11 +87,19 @@ public class MapsActivity extends BaseActivity {
         dbHelper = new DatabaseHelper(this);
 
         tvDestinoCard = findViewById(R.id.tv_destino_card);
-        tvTiempoEstimado = findViewById(R.id.tv_tiempo_estimado);
-        tvLineaRecomendada = findViewById(R.id.tv_linea_recomendada);
-        tvParadaOrigen = findViewById(R.id.tv_parada_origen);
-        tvParadaDestino = findViewById(R.id.tv_parada_destino);
-        layoutBusInfo = findViewById(R.id.layout_bus_info);
+        tvTiempoTotal = findViewById(R.id.tv_tiempo_total);
+        tvLineaNumero = findViewById(R.id.tv_linea_numero);
+        tvProximosBuses = findViewById(R.id.tv_proximos_buses);
+        tvRutaResumen = findViewById(R.id.tv_ruta_resumen);
+        btnInfoDetalles = findViewById(R.id.btn_info_detalles);
+
+        if (btnInfoDetalles != null) {
+            btnInfoDetalles.setOnClickListener(v -> {
+                if (lastConnection != null) {
+                    showRouteDetailsBottomSheet(lastConnection);
+                }
+            });
+        }
 
         transportMode = getIntent().getStringExtra("TRANSPORT_MODE");
         if (transportMode == null) transportMode = "foot";
@@ -99,8 +108,8 @@ public class MapsActivity extends BaseActivity {
         destinoLat = getIntent().getDoubleExtra("DESTINO_LAT", 0);
         destinoLon = getIntent().getDoubleExtra("DESTINO_LON", 0);
 
-        if (destinoNombre != null) {
-            tvDestinoCard.setText("Destino: " + destinoNombre);
+        if (destinoNombre != null && tvDestinoCard != null) {
+            tvDestinoCard.setText(destinoNombre);
         }
 
         map = findViewById(R.id.map);
@@ -251,6 +260,7 @@ public class MapsActivity extends BaseActivity {
     }
 
     private void updateUI(List<List<GeoPoint>> segments, GeoPoint destinationPoint, BusConnection connection, double durationSec) {
+        this.lastConnection = connection;
         // Limpiar previos
         for (Polyline p : routePolylines) map.getOverlays().remove(p);
         for (Marker m : routeMarkers) map.getOverlays().remove(m);
@@ -266,10 +276,12 @@ public class MapsActivity extends BaseActivity {
             } else {
                 timeText = (minutes / 60) + " h " + (minutes % 60) + " min";
             }
-            tvTiempoEstimado.setText("Tiempo estimado: " + timeText);
-            tvTiempoEstimado.setVisibility(View.VISIBLE);
+            if (tvTiempoTotal != null) {
+                tvTiempoTotal.setText(timeText);
+                tvTiempoTotal.setVisibility(View.VISIBLE);
+            }
         } else {
-            tvTiempoEstimado.setVisibility(View.GONE);
+            if (tvTiempoTotal != null) tvTiempoTotal.setVisibility(View.GONE);
         }
 
         List<GeoPoint> allPointsForCamera = new ArrayList<>();
@@ -297,26 +309,49 @@ public class MapsActivity extends BaseActivity {
             allPointsForCamera.add(new GeoPoint(connection.getOriginStop().getLat(), connection.getOriginStop().getLon()));
             allPointsForCamera.add(new GeoPoint(connection.getDestinationStop().getLat(), connection.getDestinationStop().getLon()));
 
-            layoutBusInfo.setVisibility(View.VISIBLE);
+            if (tvLineaNumero != null) {
+                tvLineaNumero.setText(connection.getLine());
+                tvLineaNumero.setVisibility(View.VISIBLE);
+            }
+            if (tvRutaResumen != null) {
+                tvRutaResumen.setText(connection.getOriginStop().getStopName() + " → " + connection.getDestinationStop().getStopName());
+            }
+            if (btnInfoDetalles != null) btnInfoDetalles.setVisibility(View.VISIBLE);
 
-            tvLineaRecomendada.setText("Línea recomendada: " + connection.getLine());
-            tvParadaOrigen.setText("Parada origen: " + connection.getOriginStop().getStopName());
-            tvParadaDestino.setText("Parada destino: " + connection.getDestinationStop().getStopName());
+            // Próximos buses
+            List<Long> next = connection.getNextDeparturesMin();
+            if (tvProximosBuses != null) {
+                if (next != null && !next.isEmpty()) {
+                    StringBuilder sb = new StringBuilder();
+                    for (int i = 0; i < next.size(); i++) {
+                        sb.append(next.get(i)).append("'");
+                        if (i < next.size() - 1) sb.append("  ");
+                    }
+                    tvProximosBuses.setText(sb.toString());
+                    tvProximosBuses.setVisibility(View.VISIBLE);
+                } else {
+                    tvProximosBuses.setVisibility(View.GONE);
+                }
+            }
         } else {
             // Ruta única
             if (!segments.isEmpty()) {
                 addPolyline(segments.get(0), Color.BLUE);
             }
-            layoutBusInfo.setVisibility("bus".equals(transportMode) ? View.VISIBLE : View.GONE);
-            if ("bus".equals(transportMode)) {
-                tvLineaRecomendada.setText("No se encontró línea directa disponible");
-                tvParadaOrigen.setText("");
-                tvParadaDestino.setText("");
+            if (tvLineaNumero != null) tvLineaNumero.setVisibility(View.GONE);
+            if (btnInfoDetalles != null) btnInfoDetalles.setVisibility(View.GONE);
+            if (tvProximosBuses != null) tvProximosBuses.setVisibility(View.GONE);
+            if (tvRutaResumen != null) {
+                if ("bus".equals(transportMode)) {
+                    tvRutaResumen.setText("No se encontró línea directa disponible");
+                } else {
+                    tvRutaResumen.setText(transportMode.equals("foot") ? "Caminando hasta el destino" : "En bicicleta hasta el destino");
+                }
             }
         }
 
         // Marcador Destino Final
-        addMarker(destinationPoint, "Destino: " + destinoNombre, "");
+        addMarker(destinationPoint, "Destino: " + (destinoNombre != null ? destinoNombre : ""), "");
 
         // Ajustar Cámara
         if (!allPointsForCamera.isEmpty()) {
@@ -325,6 +360,49 @@ public class MapsActivity extends BaseActivity {
         }
 
         map.invalidate();
+    }
+
+    private void showRouteDetailsBottomSheet(BusConnection bc) {
+        BottomSheetDialog dialog = new BottomSheetDialog(this);
+        View view = getLayoutInflater().inflate(R.layout.bottom_sheet_route_details, null);
+        
+        TextView tvTitle = view.findViewById(R.id.tv_bs_title);
+        TextView tvWalkOrigin = view.findViewById(R.id.tv_bs_walk_origin);
+        TextView tvOriginStop = view.findViewById(R.id.tv_bs_origin_stop);
+        TextView tvWaitTime = view.findViewById(R.id.tv_bs_wait_time);
+        TextView tvRideTime = view.findViewById(R.id.tv_bs_ride_time);
+        TextView tvDestStop = view.findViewById(R.id.tv_bs_dest_stop);
+        TextView tvWalkDest = view.findViewById(R.id.tv_bs_walk_dest);
+        TextView tvNextBusesValues = view.findViewById(R.id.tv_bs_next_buses_values);
+        View divider = view.findViewById(R.id.divider_bs);
+        TextView tvNextTitle = view.findViewById(R.id.tv_bs_next_buses_title);
+
+        int totalMin = (int) Math.ceil(bc.getTotalTimeSec() / 60);
+        if (tvTitle != null) tvTitle.setText("Línea " + bc.getLine() + " • " + totalMin + " min total");
+
+        if (tvWalkOrigin != null) tvWalkOrigin.setText("Camina hasta parada • " + (int)(bc.getWalkToOriginSec()/60) + " min (" + (int)bc.getWalkOriginMeters() + "m)");
+        if (tvOriginStop != null) tvOriginStop.setText(bc.getOriginStop().getStopName());
+        if (tvWaitTime != null) tvWaitTime.setText("Espera • " + (int)(bc.getWaitTimeSec()/60) + " min");
+        if (tvRideTime != null) tvRideTime.setText("Trayecto en bus • " + (int)(bc.getRideTimeSec()/60) + " min");
+        if (tvDestStop != null) tvDestStop.setText(bc.getDestinationStop().getStopName());
+        if (tvWalkDest != null) tvWalkDest.setText("Hasta destino • " + (int)(bc.getWalkToDestSec()/60) + " min (" + (int)bc.getWalkDestMeters() + "m)");
+
+        List<Long> next = bc.getNextDeparturesMin();
+        if (next != null && !next.isEmpty()) {
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < next.size(); i++) {
+                sb.append(next.get(i)).append("'");
+                if (i < next.size() - 1) sb.append(" • ");
+            }
+            if (tvNextBusesValues != null) tvNextBusesValues.setText(sb.toString());
+        } else {
+            if (tvNextBusesValues != null) tvNextBusesValues.setVisibility(View.GONE);
+            if (divider != null) divider.setVisibility(View.GONE);
+            if (tvNextTitle != null) tvNextTitle.setVisibility(View.GONE);
+        }
+
+        dialog.setContentView(view);
+        dialog.show();
     }
 
     private void addPolyline(List<GeoPoint> points, int color) {
@@ -353,27 +431,14 @@ public class MapsActivity extends BaseActivity {
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()))) {
             StringBuilder result = new StringBuilder();
             String line;
-            while ((line = reader.readLine()) != null) result.append(line);
+            while ((line = reader.readLine()) != null) {
+                result.append(line);
+            }
             return result.toString();
-        } finally {
-            conn.disconnect();
         }
     }
 
     private void showToast(String message) {
-        mainHandler.post(() -> Toast.makeText(MapsActivity.this, message, Toast.LENGTH_SHORT).show());
-    }
-
-    @Override
-    public void onResume() { super.onResume(); map.onResume(); }
-
-    @Override
-    public void onPause() { super.onPause(); map.onPause(); }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        if (dbHelper != null) dbHelper.close();
-        executorService.shutdown();
+        mainHandler.post(() -> Toast.makeText(this, message, Toast.LENGTH_SHORT).show());
     }
 }
