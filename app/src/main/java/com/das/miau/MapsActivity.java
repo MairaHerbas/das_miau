@@ -7,6 +7,7 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -141,66 +142,23 @@ public class MapsActivity extends BaseActivity {
         executorService.execute(() -> {
             try {
                 BusConnection connection = null;
-                boolean isNightTime = dbHelper.isNightBusTime();
 
                 if ("bus".equals(transportMode)) {
-                    // 1. Intentar encontrar conexión normal (excluyendo Gautxori si no es horario nocturno)
+                    // Búsqueda de conexión basada 100% en GTFS Real (incluyendo calendario)
                     connection = dbHelper.findBusConnection(
                             userLocation.getLatitude(), userLocation.getLongitude(),
-                            destinationPoint.getLatitude(), destinationPoint.getLongitude(),
-                            isNightTime
+                            destinationPoint.getLatitude(), destinationPoint.getLongitude()
                     );
-
-                    // 2. Si no hay conexión y NO es horario nocturno, ver si hay Gautxori disponible para avisar
-                    if (connection == null && !isNightTime) {
-                        BusConnection gautxoriConn = dbHelper.findBusConnection(
-                                userLocation.getLatitude(), userLocation.getLongitude(),
-                                destinationPoint.getLatitude(), destinationPoint.getLongitude(),
-                                true
-                        );
-                        if (gautxoriConn != null) {
-                            mainHandler.post(() -> showGautxoriWarningDialog(gautxoriConn, destinationPoint));
-                            return;
-                        }
-                    }
                 }
 
                 // Procesar ruta encontrada o ruta por defecto
                 processRouteResult(connection, destinationPoint);
 
             } catch (Exception e) {
-                e.printStackTrace();
+                Log.e("BUS_DEBUG", "Error al calcular ruta", e);
                 showToast("Error al calcular ruta");
             }
         });
-    }
-
-    private void showGautxoriWarningDialog(BusConnection connection, GeoPoint destinationPoint) {
-        new MaterialAlertDialogBuilder(this)
-                .setTitle("Servicio Nocturno Gautxori")
-                .setMessage("La mejor conexión encontrada utiliza una línea Gautxori (servicio nocturno).\n\n" +
-                        "Estas líneas solo funcionan viernes, sábados y vísperas de festivo entre las 23:00 y las 02:30.")
-                .setPositiveButton("Ver ruta nocturna", (dialog, which) -> {
-                    executorService.execute(() -> {
-                        try {
-                            processRouteResult(connection, destinationPoint);
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                            showToast("Error al cargar ruta nocturna");
-                        }
-                    });
-                })
-                .setNegativeButton("Cancelar", (dialog, which) -> {
-                    executorService.execute(() -> {
-                        try {
-                            // Buscar ruta sin bus si el usuario cancela
-                            processRouteResult(null, destinationPoint);
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    });
-                })
-                .show();
     }
 
     private void processRouteResult(BusConnection connection, GeoPoint destinationPoint) throws Exception {
@@ -211,14 +169,51 @@ public class MapsActivity extends BaseActivity {
             GeoPoint stop1 = new GeoPoint(connection.getOriginStop().getLat(), connection.getOriginStop().getLon());
             GeoPoint stop2 = new GeoPoint(connection.getDestinationStop().getLat(), connection.getDestinationStop().getLon());
 
+            // Tramo 1: Caminar a la parada (OSRM)
             RouteResult r1 = fetchOSRMRoute(userLocation, stop1, "foot");
-            RouteResult r2 = fetchOSRMRoute(stop1, stop2, "driving");
+            
+            // Tramo 2: Autobús (GTFS Shapes)
+            List<GeoPoint> busPoints;
+            double busDuration;
+
+            String shapeId = dbHelper.getShapeIdForConnection(
+                    connection.getOriginStop().getStopId(),
+                    connection.getDestinationStop().getStopId(),
+                    connection.getLine(),
+                    connection.getOriginStop().getNetwork()
+            );
+
+            busPoints = dbHelper.getTrimmedShape(
+                    shapeId,
+                    connection.getOriginStop(),
+                    connection.getDestinationStop(),
+                    connection.getOriginStop().getNetwork()
+            );
+
+            if (busPoints != null && !busPoints.isEmpty()) {
+                Log.d("BUS_DEBUG", ">>> SHAPE REAL ENCONTRADO para " + connection.getLine() + " (shape_id: " + shapeId + ")");
+                busDuration = dbHelper.getBusDuration(
+                        connection.getOriginStop().getStopId(),
+                        connection.getDestinationStop().getStopId(),
+                        connection.getLine(),
+                        connection.getOriginStop().getNetwork()
+                );
+                // Si no hay horario disponible para calcular duración, estimamos por distancia (aprox 30km/h)
+                if (busDuration <= 0) busDuration = stop1.distanceToAsDouble(stop2) / 8.3;
+            } else {
+                Log.d("BUS_DEBUG", ">>> SHAPE NO ENCONTRADO para " + connection.getLine() + ". Usando OSRM driving fallback.");
+                RouteResult r2 = fetchOSRMRoute(stop1, stop2, "driving");
+                busPoints = r2.points;
+                busDuration = r2.duration;
+            }
+
+            // Tramo 3: Caminar al destino (OSRM)
             RouteResult r3 = fetchOSRMRoute(stop2, destinationPoint, "foot");
 
             segments.add(r1.points);
-            segments.add(r2.points);
+            segments.add(busPoints);
             segments.add(r3.points);
-            totalDurationSec = r1.duration + r2.duration + r3.duration;
+            totalDurationSec = r1.duration + busDuration + r3.duration;
         } else {
             String osrmMode = "bike".equals(transportMode) ? "bicycle" : 
                              "bus".equals(transportMode) ? "driving" : "foot";
@@ -298,13 +293,7 @@ public class MapsActivity extends BaseActivity {
 
             layoutBusInfo.setVisibility(View.VISIBLE);
             
-            // Etiqueta visual Gautxori
-            String lineLabel = "Línea recomendada: " + connection.getLine();
-            if (dbHelper.isGautxori(connection.getLine())) {
-                lineLabel = "Servicio nocturno Gautxori (" + connection.getLine() + ")";
-            }
-            tvLineaRecomendada.setText(lineLabel);
-
+            tvLineaRecomendada.setText("Línea recomendada: " + connection.getLine());
             tvParadaOrigen.setText("Parada origen: " + connection.getOriginStop().getStopName());
             tvParadaDestino.setText("Parada destino: " + connection.getDestinationStop().getStopName());
         } else {
@@ -314,7 +303,7 @@ public class MapsActivity extends BaseActivity {
             }
             layoutBusInfo.setVisibility("bus".equals(transportMode) ? View.VISIBLE : View.GONE);
             if ("bus".equals(transportMode)) {
-                tvLineaRecomendada.setText("No se encontró línea directa");
+                tvLineaRecomendada.setText("No se encontró línea directa disponible");
                 tvParadaOrigen.setText("");
                 tvParadaDestino.setText("");
             }
