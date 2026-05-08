@@ -3,9 +3,13 @@ package com.das.miau;
 import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.view.View;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -14,11 +18,13 @@ import androidx.preference.PreferenceManager;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.osmdroid.config.Configuration;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
+import org.osmdroid.util.BoundingBox;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.Marker;
@@ -43,10 +49,27 @@ public class MapsActivity extends BaseActivity {
     private String transportMode;
     private String destinoNombre;
     private double destinoLat, destinoLon;
-    private Polyline currentRouteOverlay;
     private GeoPoint userLocation;
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
+
+    private List<Polyline> routePolylines = new ArrayList<>();
+    private List<Marker> routeMarkers = new ArrayList<>();
+
+    // UI Card Elements
+    private TextView tvDestinoCard, tvTiempoEstimado, tvLineaRecomendada, tvParadaOrigen, tvParadaDestino;
+    private LinearLayout layoutBusInfo;
+    private DatabaseHelper dbHelper;
+
+    private static class RouteResult {
+        List<GeoPoint> points;
+        double duration;
+
+        RouteResult(List<GeoPoint> points, double duration) {
+            this.points = points;
+            this.duration = duration;
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,12 +82,25 @@ public class MapsActivity extends BaseActivity {
         setContentView(R.layout.activity_maps);
         setupToolbar();
 
+        dbHelper = new DatabaseHelper(this);
+
+        tvDestinoCard = findViewById(R.id.tv_destino_card);
+        tvTiempoEstimado = findViewById(R.id.tv_tiempo_estimado);
+        tvLineaRecomendada = findViewById(R.id.tv_linea_recomendada);
+        tvParadaOrigen = findViewById(R.id.tv_parada_origen);
+        tvParadaDestino = findViewById(R.id.tv_parada_destino);
+        layoutBusInfo = findViewById(R.id.layout_bus_info);
+
         transportMode = getIntent().getStringExtra("TRANSPORT_MODE");
         if (transportMode == null) transportMode = "foot";
         
         destinoNombre = getIntent().getStringExtra("DESTINO_NOMBRE");
         destinoLat = getIntent().getDoubleExtra("DESTINO_LAT", 0);
         destinoLon = getIntent().getDoubleExtra("DESTINO_LON", 0);
+
+        if (destinoNombre != null) {
+            tvDestinoCard.setText("Destino: " + destinoNombre);
+        }
 
         map = findViewById(R.id.map);
         map.setTileSource(TileSourceFactory.MAPNIK);
@@ -91,7 +127,6 @@ public class MapsActivity extends BaseActivity {
                     map.getController().setZoom(15.0);
                     map.getController().setCenter(userLocation);
 
-                    // Calculamos la ruta directamente usando las coordenadas recibidas
                     if (destinoLat != 0 && destinoLon != 0) {
                         calculateRoute(new GeoPoint(destinoLat, destinoLon));
                     }
@@ -101,64 +136,219 @@ public class MapsActivity extends BaseActivity {
     }
 
     private void calculateRoute(GeoPoint destinationPoint) {
-        if (userLocation == null) {
-            Toast.makeText(this, "Obteniendo tu ubicación...", Toast.LENGTH_SHORT).show();
-            return;
-        }
+        if (userLocation == null) return;
 
         executorService.execute(() -> {
             try {
-                String osrmMode = "foot".equals(transportMode) ? "foot" :
-                                 "bike".equals(transportMode) ? "bicycle" : "driving";
+                BusConnection connection = null;
+                boolean isNightTime = dbHelper.isNightBusTime();
 
-                String routeUrlStr = "https://router.project-osrm.org/route/v1/" + osrmMode + "/" +
-                        userLocation.getLongitude() + "," + userLocation.getLatitude() + ";" +
-                        destinationPoint.getLongitude() + "," + destinationPoint.getLatitude() + "?overview=full&geometries=geojson";
+                if ("bus".equals(transportMode)) {
+                    // 1. Intentar encontrar conexión normal (excluyendo Gautxori si no es horario nocturno)
+                    connection = dbHelper.findBusConnection(
+                            userLocation.getLatitude(), userLocation.getLongitude(),
+                            destinationPoint.getLatitude(), destinationPoint.getLongitude(),
+                            isNightTime
+                    );
 
-                String routeResponse = downloadUrl(routeUrlStr);
-                JSONObject routeJson = new JSONObject(routeResponse);
-
-                if (!"Ok".equals(routeJson.getString("code"))) {
-                    showToast("No se pudo calcular la ruta");
-                    return;
-                }
-
-                JSONObject route = routeJson.getJSONArray("routes").getJSONObject(0);
-                JSONArray coordinates = route.getJSONObject("geometry").getJSONArray("coordinates");
-                double duration = route.getDouble("duration");
-
-                List<GeoPoint> routePoints = new ArrayList<>();
-                for (int i = 0; i < coordinates.length(); i++) {
-                    JSONArray coord = coordinates.getJSONArray(i);
-                    routePoints.add(new GeoPoint(coord.getDouble(1), coord.getDouble(0)));
-                }
-
-                mainHandler.post(() -> {
-                    if (currentRouteOverlay != null) {
-                        map.getOverlays().remove(currentRouteOverlay);
+                    // 2. Si no hay conexión y NO es horario nocturno, ver si hay Gautxori disponible para avisar
+                    if (connection == null && !isNightTime) {
+                        BusConnection gautxoriConn = dbHelper.findBusConnection(
+                                userLocation.getLatitude(), userLocation.getLongitude(),
+                                destinationPoint.getLatitude(), destinationPoint.getLongitude(),
+                                true
+                        );
+                        if (gautxoriConn != null) {
+                            mainHandler.post(() -> showGautxoriWarningDialog(gautxoriConn, destinationPoint));
+                            return;
+                        }
                     }
+                }
 
-                    currentRouteOverlay = new Polyline();
-                    currentRouteOverlay.setPoints(routePoints);
-                    currentRouteOverlay.getOutlinePaint().setColor(0xFF0000FF); // Azul
-                    currentRouteOverlay.getOutlinePaint().setStrokeWidth(10f);
-                    map.getOverlays().add(currentRouteOverlay);
-
-                    Marker destMarker = new Marker(map);
-                    destMarker.setPosition(destinationPoint);
-                    destMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
-                    destMarker.setTitle(destinoNombre);
-                    map.getOverlays().add(destMarker);
-
-                    map.invalidate();
-                    Toast.makeText(MapsActivity.this, "Destino: " + destinoNombre + "\nLlegada en: " + (int)(duration / 60) + " min", Toast.LENGTH_LONG).show();
-                });
+                // Procesar ruta encontrada o ruta por defecto
+                processRouteResult(connection, destinationPoint);
 
             } catch (Exception e) {
                 e.printStackTrace();
-                showToast("Error al conectar con el servidor de rutas");
+                showToast("Error al calcular ruta");
             }
         });
+    }
+
+    private void showGautxoriWarningDialog(BusConnection connection, GeoPoint destinationPoint) {
+        new MaterialAlertDialogBuilder(this)
+                .setTitle("Servicio Nocturno Gautxori")
+                .setMessage("La mejor conexión encontrada utiliza una línea Gautxori (servicio nocturno).\n\n" +
+                        "Estas líneas solo funcionan viernes, sábados y vísperas de festivo entre las 23:00 y las 02:30.")
+                .setPositiveButton("Ver ruta nocturna", (dialog, which) -> {
+                    executorService.execute(() -> {
+                        try {
+                            processRouteResult(connection, destinationPoint);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            showToast("Error al cargar ruta nocturna");
+                        }
+                    });
+                })
+                .setNegativeButton("Cancelar", (dialog, which) -> {
+                    executorService.execute(() -> {
+                        try {
+                            // Buscar ruta sin bus si el usuario cancela
+                            processRouteResult(null, destinationPoint);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    });
+                })
+                .show();
+    }
+
+    private void processRouteResult(BusConnection connection, GeoPoint destinationPoint) throws Exception {
+        List<List<GeoPoint>> segments = new ArrayList<>();
+        double totalDurationSec = 0;
+
+        if (connection != null) {
+            GeoPoint stop1 = new GeoPoint(connection.getOriginStop().getLat(), connection.getOriginStop().getLon());
+            GeoPoint stop2 = new GeoPoint(connection.getDestinationStop().getLat(), connection.getDestinationStop().getLon());
+
+            RouteResult r1 = fetchOSRMRoute(userLocation, stop1, "foot");
+            RouteResult r2 = fetchOSRMRoute(stop1, stop2, "driving");
+            RouteResult r3 = fetchOSRMRoute(stop2, destinationPoint, "foot");
+
+            segments.add(r1.points);
+            segments.add(r2.points);
+            segments.add(r3.points);
+            totalDurationSec = r1.duration + r2.duration + r3.duration;
+        } else {
+            String osrmMode = "bike".equals(transportMode) ? "bicycle" : 
+                             "bus".equals(transportMode) ? "driving" : "foot";
+            
+            RouteResult result = fetchOSRMRoute(userLocation, destinationPoint, osrmMode);
+            segments.add(result.points);
+            totalDurationSec = result.duration;
+        }
+
+        final BusConnection finalConnection = connection;
+        final double finalDuration = totalDurationSec;
+        mainHandler.post(() -> updateUI(segments, destinationPoint, finalConnection, finalDuration));
+    }
+
+    private RouteResult fetchOSRMRoute(GeoPoint start, GeoPoint end, String mode) throws Exception {
+        String urlStr = "https://router.project-osrm.org/route/v1/" + mode + "/" +
+                start.getLongitude() + "," + start.getLatitude() + ";" +
+                end.getLongitude() + "," + end.getLatitude() + "?overview=full&geometries=geojson";
+
+        String response = downloadUrl(urlStr);
+        JSONObject json = new JSONObject(response);
+        if (!"Ok".equals(json.getString("code"))) return new RouteResult(new ArrayList<>(), 0);
+
+        JSONObject route = json.getJSONArray("routes").getJSONObject(0);
+        double duration = route.getDouble("duration");
+        JSONArray coordinates = route.getJSONObject("geometry").getJSONArray("coordinates");
+
+        List<GeoPoint> points = new ArrayList<>();
+        for (int i = 0; i < coordinates.length(); i++) {
+            JSONArray c = coordinates.getJSONArray(i);
+            points.add(new GeoPoint(c.getDouble(1), c.getDouble(0)));
+        }
+        return new RouteResult(points, duration);
+    }
+
+    private void updateUI(List<List<GeoPoint>> segments, GeoPoint destinationPoint, BusConnection connection, double durationSec) {
+        // Limpiar previos
+        for (Polyline p : routePolylines) map.getOverlays().remove(p);
+        for (Marker m : routeMarkers) map.getOverlays().remove(m);
+        routePolylines.clear();
+        routeMarkers.clear();
+
+        // Mostrar tiempo estimado
+        int minutes = (int) Math.ceil(durationSec / 60);
+        String timeText;
+        if (minutes < 60) {
+            timeText = minutes + " min";
+        } else {
+            timeText = (minutes / 60) + " h " + (minutes % 60) + " min";
+        }
+        tvTiempoEstimado.setText("Tiempo estimado: " + timeText);
+
+        List<GeoPoint> allPointsForCamera = new ArrayList<>();
+        allPointsForCamera.add(userLocation);
+        allPointsForCamera.add(destinationPoint);
+
+        if (connection != null && segments.size() == 3) {
+            // Dibujar 3 segmentos con colores distintos
+            // Tramo 1: Caminando (Gris)
+            addPolyline(segments.get(0), Color.GRAY);
+            // Tramo 2: Autobús (Azul)
+            addPolyline(segments.get(1), Color.BLUE);
+            // Tramo 3: Caminando (Gris)
+            addPolyline(segments.get(2), Color.GRAY);
+
+            // Marcadores de paradas
+            addMarker(new GeoPoint(connection.getOriginStop().getLat(), connection.getOriginStop().getLon()), 
+                     "Subir: " + connection.getOriginStop().getStopName(), 
+                     "Línea " + connection.getLine());
+            
+            addMarker(new GeoPoint(connection.getDestinationStop().getLat(), connection.getDestinationStop().getLon()), 
+                     "Bajar: " + connection.getDestinationStop().getStopName(), 
+                     "Línea " + connection.getLine());
+            
+            allPointsForCamera.add(new GeoPoint(connection.getOriginStop().getLat(), connection.getOriginStop().getLon()));
+            allPointsForCamera.add(new GeoPoint(connection.getDestinationStop().getLat(), connection.getDestinationStop().getLon()));
+
+            layoutBusInfo.setVisibility(View.VISIBLE);
+            
+            // Etiqueta visual Gautxori
+            String lineLabel = "Línea recomendada: " + connection.getLine();
+            if (dbHelper.isGautxori(connection.getLine())) {
+                lineLabel = "Servicio nocturno Gautxori (" + connection.getLine() + ")";
+            }
+            tvLineaRecomendada.setText(lineLabel);
+
+            tvParadaOrigen.setText("Parada origen: " + connection.getOriginStop().getStopName());
+            tvParadaDestino.setText("Parada destino: " + connection.getDestinationStop().getStopName());
+        } else {
+            // Ruta única
+            if (!segments.isEmpty()) {
+                addPolyline(segments.get(0), 0xFF279AF6);
+            }
+            layoutBusInfo.setVisibility("bus".equals(transportMode) ? View.VISIBLE : View.GONE);
+            if ("bus".equals(transportMode)) {
+                tvLineaRecomendada.setText("No se encontró línea directa");
+                tvParadaOrigen.setText("");
+                tvParadaDestino.setText("");
+            }
+        }
+
+        // Marcador Destino Final
+        addMarker(destinationPoint, "Destino: " + destinoNombre, "");
+
+        // Ajustar Cámara
+        if (!allPointsForCamera.isEmpty()) {
+            BoundingBox bbox = BoundingBox.fromGeoPoints(allPointsForCamera);
+            map.zoomToBoundingBox(bbox.increaseByScale(1.3f), true);
+        }
+
+        map.invalidate();
+    }
+
+    private void addPolyline(List<GeoPoint> points, int color) {
+        Polyline line = new Polyline();
+        line.setPoints(points);
+        line.getOutlinePaint().setColor(color);
+        line.getOutlinePaint().setStrokeWidth(12f);
+        map.getOverlays().add(line);
+        routePolylines.add(line);
+    }
+
+    private void addMarker(GeoPoint point, String title, String snippet) {
+        Marker m = new Marker(map);
+        m.setPosition(point);
+        m.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
+        m.setTitle(title);
+        m.setSnippet(snippet);
+        map.getOverlays().add(m);
+        routeMarkers.add(m);
     }
 
     private String downloadUrl(String urlString) throws Exception {
@@ -168,9 +358,7 @@ public class MapsActivity extends BaseActivity {
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()))) {
             StringBuilder result = new StringBuilder();
             String line;
-            while ((line = reader.readLine()) != null) {
-                result.append(line);
-            }
+            while ((line = reader.readLine()) != null) result.append(line);
             return result.toString();
         } finally {
             conn.disconnect();
@@ -182,28 +370,15 @@ public class MapsActivity extends BaseActivity {
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == 101 && grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            initLocation();
-        }
-    }
+    public void onResume() { super.onResume(); map.onResume(); }
 
     @Override
-    public void onResume() {
-        super.onResume();
-        map.onResume();
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-        map.onPause();
-    }
+    public void onPause() { super.onPause(); map.onPause(); }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        if (dbHelper != null) dbHelper.close();
         executorService.shutdown();
     }
 }
