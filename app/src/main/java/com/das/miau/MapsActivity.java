@@ -213,9 +213,11 @@ public class MapsActivity extends BaseActivity {
             segments.add(busPoints);
             segments.add(r3.points);
             totalDurationSec = connection.getTotalTimeSec();
+        } else if ("bus".equals(transportMode)) {
+            // Si no hay conexión de bus, no queremos mostrar ruta alternativa de coche
+            totalDurationSec = -1;
         } else {
-            String osrmMode = "bike".equals(transportMode) ? "bicycle" :
-                             "bus".equals(transportMode) ? "driving" : "foot";
+            String osrmMode = "bike".equals(transportMode) ? "bicycle" : "foot";
             
             RouteResult result = fetchOSRMRoute(userLocation, destinationPoint, osrmMode);
             segments.add(result.points);
@@ -256,14 +258,19 @@ public class MapsActivity extends BaseActivity {
         routeMarkers.clear();
 
         // Mostrar tiempo estimado
-        int minutes = (int) Math.ceil(durationSec / 60);
-        String timeText;
-        if (minutes < 60) {
-            timeText = minutes + " min";
+        if (durationSec >= 0) {
+            int minutes = (int) Math.ceil(durationSec / 60);
+            String timeText;
+            if (minutes < 60) {
+                timeText = minutes + " min";
+            } else {
+                timeText = (minutes / 60) + " h " + (minutes % 60) + " min";
+            }
+            tvTiempoEstimado.setText("Tiempo estimado: " + timeText);
+            tvTiempoEstimado.setVisibility(View.VISIBLE);
         } else {
-            timeText = (minutes / 60) + " h " + (minutes % 60) + " min";
+            tvTiempoEstimado.setVisibility(View.GONE);
         }
-        tvTiempoEstimado.setText("Tiempo estimado: " + timeText);
 
         List<GeoPoint> allPointsForCamera = new ArrayList<>();
         allPointsForCamera.add(userLocation);

@@ -168,6 +168,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         long bestDep = -1;
         long bestArr = -1;
         long minWait = Long.MAX_VALUE;
+        long MAX_WAIT = 45 * 60; // 45 min
 
         try (Cursor cursor = database.rawQuery(sql, new String[]{todayDate, originStopId, destinationStopId, line, todayDate})) {
             while (cursor.moveToNext()) {
@@ -186,7 +187,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 long waitTime = depSecs - minDepartureTime;
 
                 // Buscar la próxima salida válida
-                if (waitTime >= 0 && waitTime < minWait) {
+                if (waitTime >= 0 && waitTime < MAX_WAIT && waitTime < minWait) {
                     minWait = waitTime;
                     bestDep = depSecs;
                     bestArr = arrSecs;
