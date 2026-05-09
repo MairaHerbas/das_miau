@@ -39,6 +39,15 @@ dependencies {
     implementation("org.osmdroid:osmdroid-android:6.1.20")
     implementation("androidx.preference:preference:1.2.1")
     implementation(libs.play.services.location)
+
+    // Librería para WorkManager (conexión en segundo plano)
+    implementation("androidx.work:work-runtime:2.9.0")
+
+    // Librería JSON con la exclusión para evitar clases duplicadas
+    implementation("com.googlecode.json-simple:json-simple:1.1.1") {
+        exclude(group = "junit", module = "junit")
+    }
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)

@@ -32,4 +32,18 @@
     <string name="search_icon_desc">Search icon</string>
     <string name="selecciona_campus">Select campus</string>
     <string name="a_pie">On foot</string>
+
+    <string name="open_nav">Open</string>
+    <string name="close_nav">Close</string>
+    <string name="us_novacio">The username cannot be empty</string>
+    <string name="pas_novacia">The password cannot be empty</string>
+    <string name="err_conexion">Server connection error</string>
+    <string name="err_procesar">Error processing the response</string>
+    <string name="miperfil">My profile</string>
+    <string name="permisodenegado">Permission denied</string>
+    <string name="perfilact">Profile updated successfully</string>
+    <string name="rellenacampos">You must fill in all fields</string>
+    <string name="contramin">Minimum 8 characters, 1 uppercase, 1 lowercase and 1 number</string>
+    <string name="registrando">Registering user...</string>
+    <string name="lineas">Lines and schedules</string>
 </resources>

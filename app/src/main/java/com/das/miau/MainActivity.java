@@ -2,17 +2,28 @@ package com.das.miau;
 
 import android.Manifest;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.view.MenuItem;
+import android.view.View;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.fragment.app.Fragment;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.material.navigation.NavigationView;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -32,12 +43,92 @@ public class MainActivity extends BaseActivity {
     private TextView tvCityName, tvWeatherDesc, tvTemps;
     private FusedLocationProviderClient fusedLocationClient;
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();
+    private DrawerLayout drawerLayout;
+    private NavigationView navigationView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         setupToolbar();
+
+        drawerLayout = findViewById(R.id.drawer_layout);
+        navigationView = findViewById(R.id.nav_view);
+        Toolbar toolbar = findViewById(R.id.toolbar);
+
+        if (toolbar != null && drawerLayout != null) {
+            ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+                    this, drawerLayout, toolbar,
+                    R.string.open_nav, R.string.close_nav);
+            drawerLayout.addDrawerListener(toggle);
+            toggle.syncState();
+        }
+        if (navigationView != null) {
+            navigationView.setNavigationItemSelectedListener(item -> {
+                int itemId = item.getItemId();
+                Fragment fragmentSeleccionado = null;
+                if (itemId == R.id.nav_perfil) {
+                    if (!isUserLoggedIn()) {
+                        //no logueado->te obligo
+                        startActivity(new Intent(MainActivity.this, LoginRegistroActivity.class));
+                    } else {
+                        //logueado->te dejo entrar
+                        fragmentSeleccionado = new PerfilFragment();
+                        toolbar.setTitle(getString(R.string.miperfil));
+                    }
+                }
+                else if (item.getItemId() == R.id.nav_lineas) {
+                    android.content.Intent intent = new android.content.Intent(this, BusesActivity.class);
+                    startActivity(intent);
+                    return true;
+                }
+                // AQUÍ AÑADIREMOS "MIS LÍNEAS" MÁS ADELANTE
+                /* else if (itemId == R.id.nav_mis_lineas) {
+                    if (!isUserLoggedIn()) {
+                        startActivity(new Intent(MainActivity.this, LoginRegistroActivity.class));
+                    } else {
+                        fragmentSeleccionado = new MisLineasFragment();
+                        toolbar.setTitle("Mis Líneas");
+                    }
+                } */
+
+                // Si hay un fragmento seleccionado, ocultamos el contenido principal y mostramos el fragmento
+                if (fragmentSeleccionado != null) {
+                    // Ocultamos la vista del tiempo y el botón de entrar
+                    findViewById(R.id.contenido_principal).setVisibility(View.GONE);
+
+                    // Cargamos el fragmento en el contenedor
+                    getSupportFragmentManager().beginTransaction()
+                            .replace(R.id.fragment_container, fragmentSeleccionado)
+                            .commit();
+                }
+
+                // Cerramos el menú después de hacer clic
+                drawerLayout.closeDrawer(GravityCompat.START);
+                return true;
+            });
+        }
+
+        // Manejar el botón de retroceso (Back)
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                if (drawerLayout != null && drawerLayout.isDrawerOpen(GravityCompat.START)) {
+                    drawerLayout.closeDrawer(GravityCompat.START);
+                } else {
+                    // Si el usuario da a atrás y está en el Perfil, lo devolvemos a la pantalla del Tiempo
+                    Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.fragment_container);
+                    if (fragment != null) {
+                        getSupportFragmentManager().beginTransaction().remove(fragment).commit();
+                        findViewById(R.id.contenido_principal).setVisibility(View.VISIBLE);
+                        if(toolbar != null) toolbar.setTitle("UniGo"); // Restaurar título original
+                    } else {
+                        setEnabled(false);
+                        getOnBackPressedDispatcher().onBackPressed();
+                    }
+                }
+            }
+        });
 
         tvCityName = findViewById(R.id.tvCityName);
         tvWeatherDesc = findViewById(R.id.tvWeatherDesc);
@@ -52,6 +143,10 @@ public class MainActivity extends BaseActivity {
         });
 
         checkPermissionsAndGetLocation();
+    }
+    private boolean isUserLoggedIn() {
+        SharedPreferences prefs = getSharedPreferences("MisPreferencias", MODE_PRIVATE);
+        return prefs.contains("id_usuario"); //true->hay alguien loggeado
     }
 
     private void checkPermissionsAndGetLocation() {
@@ -69,7 +164,6 @@ public class MainActivity extends BaseActivity {
                     String city = getNearestCity(location.getLatitude(), location.getLongitude());
                     fetchWeather(city);
                 } else {
-                    // Si no hay ubicación, por defecto Bilbao
                     fetchWeather("Bilbao");
                 }
             });
@@ -102,7 +196,7 @@ public class MainActivity extends BaseActivity {
                     if (element.getAttribute("cityName").equalsIgnoreCase(city)) {
                         String max = element.getElementsByTagName("tempMax").item(0).getTextContent();
                         String min = element.getElementsByTagName("tempMin").item(0).getTextContent();
-                        
+
                         Element symbol = (Element) element.getElementsByTagName("symbol").item(0);
                         String desc = symbol.getElementsByTagName("es").item(0).getTextContent();
 

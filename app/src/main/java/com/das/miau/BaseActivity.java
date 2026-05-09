@@ -34,11 +34,11 @@ public abstract class BaseActivity extends AppCompatActivity {
                     showSettingsDialog();
                     return true;
                 }
-                else if (item.getItemId() == R.id.action_buses) {
+                /*else if (item.getItemId() == R.id.action_buses) {
                     android.content.Intent intent = new android.content.Intent(this, BusesActivity.class);
                     startActivity(intent);
                     return true;
-                }
+                }*/
                 return false;
             });
 

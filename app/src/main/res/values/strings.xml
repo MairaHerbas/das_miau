@@ -34,4 +34,17 @@
     <string name="selecciona_campus">Selecciona campus</string>
     <string name="a_pie">A pie</string>
 
+    <string name="open_nav">Abrir</string>
+    <string name="close_nav">Cerrar</string>
+    <string name="us_novacio">El usuario no puede estar vacío</string>
+    <string name="pas_novacia">La contraseña no puede estar vacía</string>
+    <string name="err_conexion">Error de conexión con el servidor</string>
+    <string name="err_procesar">Error al procesar la respuesta</string>
+    <string name="miperfil">Mi perfil</string>
+    <string name="permisodenegado">Permiso denegado</string>
+    <string name="perfilact">Perfil actualizado correctamente</string>
+    <string name="rellenacampos">Debe rellenar todos los campos</string>
+    <string name="contramin">Mínimo 8 caracteres, 1 mayúscula, 1 minúscula y 1 número</string>
+    <string name="registrando">Registrando usuario...</string>
+    <string name="lineas">Líneas y horarios</string>
 </resources>
