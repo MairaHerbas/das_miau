@@ -178,7 +178,7 @@ public class MapsActivity extends BaseActivity {
             GeoPoint stop2 = new GeoPoint(connection.getDestinationStop().getLat(), connection.getDestinationStop().getLon());
 
             // Tramo 1: Caminar a la parada (OSRM)
-            RouteResult r1 = fetchOSRMRoute(userLocation, stop1, "foot");
+            RouteResult r1 = fetchOSRMRoute(userLocation, stop1, "walking");
             
             // Tramo 2: Autobús (GTFS Shapes)
             List<GeoPoint> busPoints;
@@ -216,7 +216,7 @@ public class MapsActivity extends BaseActivity {
             }
 
             // Tramo 3: Caminar al destino (OSRM)
-            RouteResult r3 = fetchOSRMRoute(stop2, destinationPoint, "foot");
+            RouteResult r3 = fetchOSRMRoute(stop2, destinationPoint, "walking");
 
             segments.add(r1.points);
             segments.add(busPoints);
@@ -226,11 +226,35 @@ public class MapsActivity extends BaseActivity {
             // Si no hay conexión de bus, no queremos mostrar ruta alternativa de coche
             totalDurationSec = -1;
         } else {
-            String osrmMode = "bike".equals(transportMode) ? "bicycle" : "foot";
-            
+            String osrmMode;
+            if ("bike".equals(transportMode)) {
+                // Para bici, la API de OSRM exige la palabra "cycling"
+                osrmMode = "cycling";
+            } else if ("foot".equals(transportMode)) {
+                // Para ir a pie, la API de OSRM exige la palabra "walking"
+                osrmMode = "walking";
+            } else {
+                osrmMode = "driving";
+            }
+
             RouteResult result = fetchOSRMRoute(userLocation, destinationPoint, osrmMode);
             segments.add(result.points);
-            totalDurationSec = result.duration;
+            
+            double distanceMeters = 0;
+            if (result.points != null && !result.points.isEmpty()) {
+                for (int i = 0; i < result.points.size() - 1; i++) {
+                    distanceMeters += result.points.get(i).distanceToAsDouble(result.points.get(i + 1));
+                }
+            }
+
+            if ("foot".equals(transportMode)) {
+                totalDurationSec = distanceMeters / 1.1;
+            } else if ("bike".equals(transportMode)) {
+                totalDurationSec = distanceMeters / 4.16;
+            } else {
+                totalDurationSec = result.duration;
+            }
+            Log.d("ROUTE_DEBUG", "Modo: " + transportMode + ", Distancia: " + (int)distanceMeters + "m, Duración: " + (int)totalDurationSec + "s");
         }
 
         final BusConnection finalConnection = connection;
@@ -239,13 +263,33 @@ public class MapsActivity extends BaseActivity {
     }
 
     private RouteResult fetchOSRMRoute(GeoPoint start, GeoPoint end, String mode) throws Exception {
-        String urlStr = "https://router.project-osrm.org/route/v1/" + mode + "/" +
-                start.getLongitude() + "," + start.getLatitude() + ";" +
-                end.getLongitude() + "," + end.getLatitude() + "?overview=full&geometries=geojson";
+        String urlStr;
+
+        if ("foot".equals(transportMode)) {
+            // Servidor exclusivo de peatones (conoce aceras, plazas y el Casco Viejo)
+            urlStr = "https://routing.openstreetmap.de/routed-foot/route/v1/foot/" +
+                    start.getLongitude() + "," + start.getLatitude() + ";" +
+                    end.getLongitude() + "," + end.getLatitude() + "?overview=full&geometries=geojson";
+
+        } else if ("bike".equals(transportMode)) {
+            // Servidor exclusivo de bicicletas (prioriza bidegorris)
+            urlStr = "https://routing.openstreetmap.de/routed-bike/route/v1/bike/" +
+                    start.getLongitude() + "," + start.getLatitude() + ";" +
+                    end.getLongitude() + "," + end.getLatitude() + "?overview=full&geometries=geojson";
+
+        } else {
+            // Servidor por defecto (coches)
+            urlStr = "https://router.project-osrm.org/route/v1/driving/" +
+                    start.getLongitude() + "," + start.getLatitude() + ";" +
+                    end.getLongitude() + "," + end.getLatitude() + "?overview=full&geometries=geojson";
+        }
 
         String response = downloadUrl(urlStr);
         JSONObject json = new JSONObject(response);
-        if (!"Ok".equals(json.getString("code"))) return new RouteResult(new ArrayList<>(), 0);
+        if (!"Ok".equals(json.getString("code"))) {
+            Log.e("ROUTE_DEBUG", "OSRM error " + json.optString("code") + " for mode " + mode);
+            return new RouteResult(new ArrayList<>(), 0);
+        }
 
         JSONObject route = json.getJSONArray("routes").getJSONObject(0);
         double duration = route.getDouble("duration");
@@ -344,8 +388,12 @@ public class MapsActivity extends BaseActivity {
             if (tvRutaResumen != null) {
                 if ("bus".equals(transportMode)) {
                     tvRutaResumen.setText("No se encontró línea directa disponible");
+                } else if ("bike".equals(transportMode)) {
+                    tvRutaResumen.setText("En bicicleta hasta el destino");
+                } else if ("tram".equals(transportMode)) {
+                    tvRutaResumen.setText("En coche hasta el destino");
                 } else {
-                    tvRutaResumen.setText(transportMode.equals("foot") ? "Caminando hasta el destino" : "En bicicleta hasta el destino");
+                    tvRutaResumen.setText("Caminando hasta el destino");
                 }
             }
         }

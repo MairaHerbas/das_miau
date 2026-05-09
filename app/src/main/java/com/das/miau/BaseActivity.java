@@ -12,7 +12,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
 public abstract class BaseActivity extends AppCompatActivity {
-//miau jjj
     protected PreferencesManager prefManager;
 
     @Override

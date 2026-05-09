@@ -84,7 +84,26 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public void openDatabase() {
         String dbPath = context.getDatabasePath(DB_NAME).getPath();
         if (database == null || !database.isOpen()) {
-            database = SQLiteDatabase.openDatabase(dbPath, null, SQLiteDatabase.OPEN_READONLY);
+            // Cambiamos a READ_WRITE para poder crear los índices
+            database = SQLiteDatabase.openDatabase(dbPath, null, SQLiteDatabase.OPEN_READWRITE);
+            crearIndices(); // Llamamos al optimizador
+        }
+    }
+
+    // AÑADE ESTE MÉTODO JUSTO DEBAJO
+    private void crearIndices() {
+        try {
+            // Estos índices hacen que buscar paradas y shapes pase de tardar segundos a milisegundos
+            database.execSQL("CREATE INDEX IF NOT EXISTS idx_st_stop_bilbo ON stop_times_bilbobus_limpio(stop_id)");
+            database.execSQL("CREATE INDEX IF NOT EXISTS idx_st_trip_bilbo ON stop_times_bilbobus_limpio(trip_id)");
+            database.execSQL("CREATE INDEX IF NOT EXISTS idx_shape_bilbo ON shapes_bilbobus_limpio(shape_id)");
+
+            database.execSQL("CREATE INDEX IF NOT EXISTS idx_st_stop_bizkai ON stop_times_bizkaibus_limpio(stop_id)");
+            database.execSQL("CREATE INDEX IF NOT EXISTS idx_st_trip_bizkai ON stop_times_bizkaibus_limpio(trip_id)");
+            database.execSQL("CREATE INDEX IF NOT EXISTS idx_shape_bizkai ON shapes_bizkaibus_limpio(shape_id)");
+            Log.d(TAG, "Índices optimizados creados con éxito");
+        } catch (Exception e) {
+            Log.e(TAG, "Error creando índices", e);
         }
     }
 
@@ -255,11 +274,23 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         Log.d(TAG, ">>> Escaneando paradas cerca de: " + lat + ", " + lon);
 
-        String query = "SELECT stop_id, stop_name, stop_lat, stop_lon, 'bilbobus' FROM stops_bilbobus_limpio " +
-                "UNION ALL " +
-                "SELECT stop_id, stop_name, stop_lat, stop_lon, 'bizkaibus' FROM stops_bizkaibus_limpio";
+        // 1. Ampliamos la caja a 2 km  para campus grandes como Leioa
+        double radioBusqueda = 0.02;
+        String latMin = String.valueOf(lat - radioBusqueda);
+        String latMax = String.valueOf(lat + radioBusqueda);
+        String lonMin = String.valueOf(lon - radioBusqueda);
+        String lonMax = String.valueOf(lon + radioBusqueda);
 
-        Cursor cursor = database.rawQuery(query, null);
+        // 2. Usamos REPLACE en SQL para cambiar las comas por puntos sobre la marcha
+        String query = "SELECT stop_id, stop_name, stop_lat, stop_lon, 'bilbobus' FROM stops_bilbobus_limpio " +
+                "WHERE CAST(REPLACE(stop_lat, ',', '.') AS REAL) BETWEEN ? AND ? AND CAST(REPLACE(stop_lon, ',', '.') AS REAL) BETWEEN ? AND ? " +
+                "UNION ALL " +
+                "SELECT stop_id, stop_name, stop_lat, stop_lon, 'bizkaibus' FROM stops_bizkaibus_limpio " +
+                "WHERE CAST(REPLACE(stop_lat, ',', '.') AS REAL) BETWEEN ? AND ? AND CAST(REPLACE(stop_lon, ',', '.') AS REAL) BETWEEN ? AND ?";
+
+        String[] parametros = {latMin, latMax, lonMin, lonMax, latMin, latMax, lonMin, lonMax};
+
+        Cursor cursor = database.rawQuery(query, parametros);
 
         if (cursor.moveToFirst()) {
             do {
@@ -272,25 +303,18 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 float[] dist = new float[1];
                 Location.distanceBetween(lat, lon, sLat, sLon, dist);
 
-                if (dist[0] < 500) { // Buscar paradas cercanas en un radio de 500m
+                if (dist[0] < 2000) {
                     BusStop stop = new BusStop(id, name, sLat, sLon);
-                    stop.setNetwork(red); // Guardar la red para validaciones posteriores
+                    stop.setNetwork(red);
                     stop.setLines(getLinesForStop(id, red));
                     stops.add(new NearbyStop(stop, dist[0]));
-                    Log.d(TAG, "   [CANDIDATA] " + name + " (" + red + ") a " + (int)dist[0] + "m. Líneas: " + stop.getLines());
                 }
             } while (cursor.moveToNext());
         }
         cursor.close();
 
-        Collections.sort(stops, new Comparator<NearbyStop>() {
-            @Override
-            public int compare(NearbyStop o1, NearbyStop o2) {
-                return Float.compare(o1.distance, o2.distance);
-            }
-        });
-
-        Log.d(TAG, "<<< Fin. Encontradas " + stops.size() + " en radio de 500m.");
+        Collections.sort(stops, (o1, o2) -> Float.compare(o1.distance, o2.distance));
+        Log.d(TAG, "<<< Fin. Encontradas " + stops.size() + " en radio de 5000m.");
         return stops;
     }
 

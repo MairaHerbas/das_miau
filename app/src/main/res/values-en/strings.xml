@@ -21,7 +21,7 @@
     <string name="foot">Foot</string>
     <string name="bike">Bike</string>
     <string name="bus">Bus</string>
-    <string name="tram">Tram</string>
+    <string name="tram">Car</string>
     <string name="select_destination">Select Destination</string>
     <string name="weather_in">"Weather in "</string>
     <string name="loading_weather">Loading weather...</string>
