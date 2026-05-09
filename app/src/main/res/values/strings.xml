@@ -22,7 +22,7 @@
     <string name="foot">Pie</string>
     <string name="bike">Bici</string>
     <string name="bus">Autobús</string>
-    <string name="tram">Tranvía</string>
+    <string name="tram">Coche</string>
     <string name="select_destination">Selecciona destino</string>
     <string name="loading_weather">Cargando clima...</string>
     <string name="weather_error">Error al cargar el clima</string>
