@@ -228,13 +228,15 @@ public class MapsActivity extends BaseActivity {
         } else {
             String osrmMode;
             if ("bike".equals(transportMode)) {
+                // Para bici, la API de OSRM exige la palabra "cycling"
                 osrmMode = "cycling";
             } else if ("foot".equals(transportMode)) {
+                // Para ir a pie, la API de OSRM exige la palabra "walking"
                 osrmMode = "walking";
             } else {
                 osrmMode = "driving";
             }
-            
+
             RouteResult result = fetchOSRMRoute(userLocation, destinationPoint, osrmMode);
             segments.add(result.points);
             
@@ -261,9 +263,26 @@ public class MapsActivity extends BaseActivity {
     }
 
     private RouteResult fetchOSRMRoute(GeoPoint start, GeoPoint end, String mode) throws Exception {
-        String urlStr = "https://router.project-osrm.org/route/v1/" + mode + "/" +
-                start.getLongitude() + "," + start.getLatitude() + ";" +
-                end.getLongitude() + "," + end.getLatitude() + "?overview=full&geometries=geojson";
+        String urlStr;
+
+        if ("foot".equals(transportMode)) {
+            // Servidor exclusivo de peatones (conoce aceras, plazas y el Casco Viejo)
+            urlStr = "https://routing.openstreetmap.de/routed-foot/route/v1/foot/" +
+                    start.getLongitude() + "," + start.getLatitude() + ";" +
+                    end.getLongitude() + "," + end.getLatitude() + "?overview=full&geometries=geojson";
+
+        } else if ("bike".equals(transportMode)) {
+            // Servidor exclusivo de bicicletas (prioriza bidegorris)
+            urlStr = "https://routing.openstreetmap.de/routed-bike/route/v1/bike/" +
+                    start.getLongitude() + "," + start.getLatitude() + ";" +
+                    end.getLongitude() + "," + end.getLatitude() + "?overview=full&geometries=geojson";
+
+        } else {
+            // Servidor por defecto (coches)
+            urlStr = "https://router.project-osrm.org/route/v1/driving/" +
+                    start.getLongitude() + "," + start.getLatitude() + ";" +
+                    end.getLongitude() + "," + end.getLatitude() + "?overview=full&geometries=geojson";
+        }
 
         String response = downloadUrl(urlStr);
         JSONObject json = new JSONObject(response);
