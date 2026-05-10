@@ -46,4 +46,5 @@
     <string name="contramin">Minimum 8 characters, 1 uppercase, 1 lowercase and 1 number</string>
     <string name="registrando">Registering user...</string>
     <string name="lineas">Lines and schedules</string>
+    <string name="inicio">Home</string>
 </resources>
