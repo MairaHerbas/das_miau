@@ -4,12 +4,17 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
+import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
+import androidx.core.view.GravityCompat;
+import androidx.fragment.app.Fragment;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
@@ -37,7 +42,33 @@ public class MainActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        // Al llamar a setupToolbar(), la BaseActivity se encarga de crear el Drawer
         setupToolbar();
+
+        Toolbar toolbar = findViewById(R.id.toolbar);
+
+        // Manejar el botón de retroceso (Back)
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                // drawerLayout viene heredado de BaseActivity
+                if (drawerLayout != null && drawerLayout.isDrawerOpen(GravityCompat.START)) {
+                    drawerLayout.closeDrawer(GravityCompat.START);
+                } else {
+                    // Si el usuario da a atrás y está en el Perfil, lo devolvemos a la pantalla del Tiempo
+                    Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.fragment_container);
+                    if (fragment != null) {
+                        getSupportFragmentManager().beginTransaction().remove(fragment).commit();
+                        findViewById(R.id.contenido_principal).setVisibility(View.VISIBLE);
+                        if(toolbar != null) toolbar.setTitle("UniGo"); // Restaurar título original
+                    } else {
+                        setEnabled(false);
+                        getOnBackPressedDispatcher().onBackPressed();
+                    }
+                }
+            }
+        });
 
         tvCityName = findViewById(R.id.tvCityName);
         tvWeatherDesc = findViewById(R.id.tvWeatherDesc);
@@ -69,7 +100,6 @@ public class MainActivity extends BaseActivity {
                     String city = getNearestCity(location.getLatitude(), location.getLongitude());
                     fetchWeather(city);
                 } else {
-                    // Si no hay ubicación, por defecto Bilbao
                     fetchWeather("Bilbao");
                 }
             });
@@ -102,7 +132,7 @@ public class MainActivity extends BaseActivity {
                     if (element.getAttribute("cityName").equalsIgnoreCase(city)) {
                         String max = element.getElementsByTagName("tempMax").item(0).getTextContent();
                         String min = element.getElementsByTagName("tempMin").item(0).getTextContent();
-                        
+
                         Element symbol = (Element) element.getElementsByTagName("symbol").item(0);
                         String desc = symbol.getElementsByTagName("es").item(0).getTextContent();
 
