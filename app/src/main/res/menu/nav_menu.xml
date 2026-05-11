@@ -11,5 +11,5 @@
     <item
         android:id="@+id/nav_lineas"
         android:icon="@android:drawable/ic_menu_preferences"
-        android:title="@string/lineas" />
+        android:title="@string/lineas_bus" />
 </menu>
