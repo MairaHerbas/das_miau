@@ -23,9 +23,17 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
+// --- AÑADIDOS PARA EL RANKING ---
+import org.json.JSONArray;
+import org.json.JSONObject;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+// ---------------------------------
+
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -35,6 +43,10 @@ import javax.xml.parsers.DocumentBuilderFactory;
 public class MainActivity extends BaseActivity {
 
     private TextView tvCityName, tvWeatherDesc, tvTemps;
+
+    // --- VARIABLES DEL RANKING ---
+    private TextView tvTop1, tvTop2, tvTop3;
+
     private FusedLocationProviderClient fusedLocationClient;
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();
 
@@ -75,6 +87,11 @@ public class MainActivity extends BaseActivity {
         tvTemps = findViewById(R.id.tvTemps);
         Button btnEntrar = findViewById(R.id.btnEntrar);
 
+        // --- ENLAZAR TEXTVIEWS DEL RANKING ---
+        tvTop1 = findViewById(R.id.tvTop1);
+        tvTop2 = findViewById(R.id.tvTop2);
+        tvTop3 = findViewById(R.id.tvTop3);
+
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
         btnEntrar.setOnClickListener(v -> {
@@ -83,6 +100,64 @@ public class MainActivity extends BaseActivity {
         });
 
         checkPermissionsAndGetLocation();
+
+        // --- DESCARGAMOS EL RANKING DE LA BASE DE DATOS ---
+        fetchTopRanking();
+    }
+
+    private void fetchTopRanking() {
+        executorService.execute(() -> {
+            try {
+                URL url = new URL("http://34.175.63.186:81/get_ranking.php");
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setRequestMethod("GET");
+
+                BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                StringBuilder response = new StringBuilder();
+                String line;
+                while ((line = reader.readLine()) != null) { response.append(line); }
+                reader.close();
+
+                JSONArray jsonArray = new JSONArray(response.toString());
+
+                String top1 = "1. -";
+                String top2 = "2. -";
+                String top3 = "3. -";
+
+                // Leemos los 3 primeros (o los que haya)
+                if (jsonArray.length() > 0) {
+                    JSONObject f1 = jsonArray.getJSONObject(0);
+                    top1 = "1. 🥇 " + f1.getString("nombre") + " (" + String.format(Locale.US, "%.1f", f1.getDouble("media_puntos")) + " pts/usr)";
+                }
+                if (jsonArray.length() > 1) {
+                    JSONObject f2 = jsonArray.getJSONObject(1);
+                    top2 = "2. 🥈 " + f2.getString("nombre") + " (" + String.format(Locale.US, "%.1f", f2.getDouble("media_puntos")) + " pts/usr)";
+                }
+                if (jsonArray.length() > 2) {
+                    JSONObject f3 = jsonArray.getJSONObject(2);
+                    top3 = "3. 🥉 " + f3.getString("nombre") + " (" + String.format(Locale.US, "%.1f", f3.getDouble("media_puntos")) + " pts/usr)";
+                }
+
+                // Las variables que pasamos a runOnUiThread deben ser finales (o efectivamente finales)
+                final String finalTop1 = top1;
+                final String finalTop2 = top2;
+                final String finalTop3 = top3;
+
+                runOnUiThread(() -> {
+                    if (tvTop1 != null) tvTop1.setText(finalTop1);
+                    if (tvTop2 != null) tvTop2.setText(finalTop2);
+                    if (tvTop3 != null) tvTop3.setText(finalTop3);
+                });
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                runOnUiThread(() -> {
+                    if (tvTop1 != null) tvTop1.setText("Aún no hay puntos registrados");
+                    if (tvTop2 != null) tvTop2.setVisibility(View.GONE);
+                    if (tvTop3 != null) tvTop3.setVisibility(View.GONE);
+                });
+            }
+        });
     }
 
     private void checkPermissionsAndGetLocation() {

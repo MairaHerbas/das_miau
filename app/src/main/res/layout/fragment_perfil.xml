@@ -45,6 +45,13 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Cambiar Foto" />
+        <TextView
+            android:id="@+id/tvMisPuntos"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="?attr/colorPrimary" />
 
         <com.google.android.material.textfield.TextInputLayout
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
@@ -123,6 +130,5 @@
             android:text="Guardar Cambios"
             android:textColor="@android:color/white"
             android:textSize="18sp" />
-
     </LinearLayout>
 </ScrollView>
