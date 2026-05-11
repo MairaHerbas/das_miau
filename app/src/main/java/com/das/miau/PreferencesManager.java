@@ -49,7 +49,6 @@ public class PreferencesManager {
     }
 
     public void applySettings(Context context) {
-        // Apply Language
         String lang = getLanguage();
         Locale locale = new Locale(lang);
         Locale.setDefault(locale);
@@ -58,8 +57,6 @@ public class PreferencesManager {
         config.setLocale(locale);
         context.createConfigurationContext(config);
         res.updateConfiguration(config, res.getDisplayMetrics());
-
-        // Theme is applied via setTheme() in Activity
     }
 
     public int getThemeResource() {
