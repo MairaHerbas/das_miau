@@ -24,7 +24,7 @@ public class BusesAdapter extends RecyclerView.Adapter<BusesAdapter.BusViewHolde
     @NonNull
     @Override
     public BusViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        // Usamos un layout de Android por defecto para ir más rápido, luego puedes crear el tuyo
+        //usamos un layout de Android por defecto para ir más rápido
         View view = LayoutInflater.from(parent.getContext()).inflate(android.R.layout.simple_list_item_2, parent, false);
         return new BusViewHolder(view);
     }
@@ -48,10 +48,10 @@ public class BusesAdapter extends RecyclerView.Adapter<BusesAdapter.BusViewHolde
             super(itemView);
             tvLinea = itemView.findViewById(android.R.id.text1);
             tvDestino = itemView.findViewById(android.R.id.text2);
-            tvLinea.setTextColor(0xFF000000); // Negro
+            tvLinea.setTextColor(0xFF000000); //negro
             tvLinea.setTextSize(18f);
             tvLinea.setTypeface(null, android.graphics.Typeface.BOLD);
-            tvDestino.setTextColor(0xFF666666); // Gris oscuro
+            tvDestino.setTextColor(0xFF666666); //gris oscuro
         }
     }
 }

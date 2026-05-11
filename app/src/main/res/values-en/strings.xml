@@ -58,4 +58,41 @@
     <string name="seguro">Sure?</string>
     <string name="rutaini">You have won 10 points!</string>
     <string name="deshacer">Undo</string>
+
+    <string name="usuario">User</string>
+    <string name="contrasena">Password</string>
+    <string name="iniciarsesion">Log in</string>
+    <string name="registrarse">Sign in</string>
+
+    <string name="cargando">Loading...</string>
+    <string name="to_fac">Top Sustainable Faculties</string>
+    <string name="empruta">Start route</string>
+
+    <string name="crearcuenta">Create account</string>
+    <string name="tomarfoto">Take a picture</string>
+    <string name="nombre">Name</string>
+    <string name="correo">Email</string>
+    <string name="usNombre">Username</string>
+    <string name="fac">Select your faculty:</string>
+
+    <string name="lineamin">Line -- • -- min total</string>
+    <string name="camina">Walk to stop • -- min (--m)</string>
+    <string name="paradao">STOP ORIGIN</string>
+    <string name="espera">Wait • -- min</string>
+    <string name="trayectobus">Bus • -- min</string>
+    <string name="paradad">DESTINATION STOP</string>
+    <string name="hastad">Until destination • -- min (--m)</string>
+    <string name="proxbus">Next buses</string>
+
+    <string name="guardar">Save changes</string>
+    <string name="cerrar_s">Log out</string>
+    <string name="parada">Stop A → Stop B</string>
+    <string name="nopuntos">There are no points registered yet</string>
+
+    <string name="nolinea">There is no direct line available</string>
+    <string name="bicid">In bike until the destination</string>
+    <string name="coched">In car until the destination</string>
+    <string name="caminard">Walking until the destination</string>
+
+    <string name="linea">Line</string>
 </resources>

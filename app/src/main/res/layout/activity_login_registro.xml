@@ -38,7 +38,8 @@
                 android:id="@+id/et_usuario"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Usuario"
+                android:hint="@string/usuario"
+                android:textStyle="italic"
                 android:inputType="text" />
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -53,7 +54,8 @@
                 android:id="@+id/et_contrasena"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Contraseña"
+                android:hint="@string/contrasena"
+                android:textStyle="italic"
                 android:inputType="textPassword" />
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -63,7 +65,8 @@
             android:layout_height="60dp"
             android:layout_marginBottom="16dp"
             android:backgroundTint="?attr/colorPrimary"
-            android:text="Iniciar Sesión"
+            android:text="@string/iniciarsesion"
+            android:fontFamily="@font/playfair_semibolditalic"
             android:textColor="@android:color/white"
             android:textSize="18sp" />
 
@@ -72,7 +75,8 @@
             style="@style/Widget.MaterialComponents.Button.OutlinedButton"
             android:layout_width="match_parent"
             android:layout_height="60dp"
-            android:text="Registrarse"
+            android:text="@string/registrarse"
+            android:fontFamily="@font/playfair_semibolditalic"
             android:textSize="18sp" />
 
     </LinearLayout>

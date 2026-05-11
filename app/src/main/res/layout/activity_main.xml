@@ -19,6 +19,7 @@
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             android:background="?attr/colorPrimary"
+            android:fontFamily="@font/playfair_semibolditalic"
             app:titleTextColor="@android:color/white"
             app:title="UniGo" />
 
@@ -35,6 +36,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="UniGo"
+                android:fontFamily="@font/playfair_semibolditalic"
                 android:textSize="40sp"
                 android:textStyle="bold"
                 android:textColor="?attr/colorPrimary"
@@ -58,7 +60,8 @@
                         android:id="@+id/tvCityName"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Cargando..."
+                        android:text="@string/cargando"
+                        android:fontFamily="@font/playfair_semibolditalic"
                         android:textSize="18sp"
                         android:textStyle="bold" />
 
@@ -97,9 +100,9 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Top Facultades Sostenibles 🏆"
+                        android:text="@string/to_fac"
                         android:textSize="18sp"
-                        android:textStyle="bold"
+                        android:fontFamily="@font/playfair_semibolditalic"
                         android:textAlignment="center"
                         android:textColor="?attr/colorPrimary"
                         android:layout_marginBottom="12dp" />
@@ -108,7 +111,7 @@
                         android:id="@+id/tvTop1"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="1. Cargando..."
+                        android:text="@string/cargando"
                         android:textSize="16sp"
                         android:textStyle="bold"
                         android:layout_marginBottom="6dp"/>
@@ -118,6 +121,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="2. ..."
+                        android:fontFamily="@font/playfair_regular"
                         android:textSize="15sp"
                         android:layout_marginBottom="6dp"/>
 
@@ -126,6 +130,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="3. ..."
+                        android:fontFamily="@font/playfair_regular"
                         android:textSize="14sp"/>
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
@@ -134,7 +139,9 @@
                 android:id="@+id/btnEntrar"
                 android:layout_width="250dp"
                 android:layout_height="60dp"
-                android:text="Empezar Ruta"
+                android:text="@string/empruta"
+                android:fontFamily="@font/playfair_regular"
+                android:textStyle="bold"
                 android:textSize="18sp"
                 android:backgroundTint="?attr/colorPrimary"
                 android:textColor="@android:color/white" />

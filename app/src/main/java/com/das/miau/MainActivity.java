@@ -44,7 +44,6 @@ public class MainActivity extends BaseActivity {
 
     private TextView tvCityName, tvWeatherDesc, tvTemps;
 
-    // --- VARIABLES DEL RANKING ---
     private TextView tvTop1, tvTop2, tvTop3;
 
     private FusedLocationProviderClient fusedLocationClient;
@@ -54,28 +53,24 @@ public class MainActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        // Al llamar a setupToolbar(), la BaseActivity se encarga de crear el Drawer
         setupToolbar();
-
         Toolbar toolbar = findViewById(R.id.toolbar);
 
-        // Manejar el botón de retroceso (Back)
+        //botón back
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
-                // drawerLayout viene heredado de BaseActivity
                 if (drawerLayout != null && drawerLayout.isDrawerOpen(GravityCompat.START)) {
                     drawerLayout.closeDrawer(GravityCompat.START);
                 } else {
-                    // Si el usuario da a atrás y está en el Perfil, lo devolvemos a la pantalla del Tiempo
+                    //si el user da  atrás y está en el Perfil, lo devolvemos a la pantalla del Tiempo
                     Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.fragment_container);
                     if (fragment != null) {
                         getSupportFragmentManager().beginTransaction().remove(fragment).commit();
                         findViewById(R.id.contenido_principal).setVisibility(View.VISIBLE);
-                        if(toolbar != null) toolbar.setTitle(R.string.app_name); // Restaurar título original
+                        if(toolbar != null) toolbar.setTitle(R.string.app_name);
                     } else {
-                        // Si estamos en la pantalla principal y no hay fragmentos, salimos de la app
+                        //si estamos en la pantalla principal y no hay fragmentos, salimos de la app
                         finish();
                     }
                 }
@@ -87,7 +82,6 @@ public class MainActivity extends BaseActivity {
         tvTemps = findViewById(R.id.tvTemps);
         Button btnEntrar = findViewById(R.id.btnEntrar);
 
-        // --- ENLAZAR TEXTVIEWS DEL RANKING ---
         tvTop1 = findViewById(R.id.tvTop1);
         tvTop2 = findViewById(R.id.tvTop2);
         tvTop3 = findViewById(R.id.tvTop3);
@@ -98,10 +92,7 @@ public class MainActivity extends BaseActivity {
             Intent intent = new Intent(MainActivity.this, TransportActivity.class);
             startActivity(intent);
         });
-
         checkPermissionsAndGetLocation();
-
-        // --- DESCARGAMOS EL RANKING DE LA BASE DE DATOS ---
         fetchTopRanking();
     }
 
@@ -124,7 +115,7 @@ public class MainActivity extends BaseActivity {
                 String top2 = "2. -";
                 String top3 = "3. -";
 
-                // Leemos los 3 primeros (o los que haya)
+                //leemos
                 if (jsonArray.length() > 0) {
                     JSONObject f1 = jsonArray.getJSONObject(0);
                     top1 = "1. 🥇 " + f1.getString("nombre") + " (" + String.format(Locale.US, "%.1f", f1.getDouble("media_puntos")) + " pts/usr)";
@@ -137,8 +128,6 @@ public class MainActivity extends BaseActivity {
                     JSONObject f3 = jsonArray.getJSONObject(2);
                     top3 = "3. 🥉 " + f3.getString("nombre") + " (" + String.format(Locale.US, "%.1f", f3.getDouble("media_puntos")) + " pts/usr)";
                 }
-
-                // Las variables que pasamos a runOnUiThread deben ser finales (o efectivamente finales)
                 final String finalTop1 = top1;
                 final String finalTop2 = top2;
                 final String finalTop3 = top3;
@@ -152,14 +141,14 @@ public class MainActivity extends BaseActivity {
             } catch (Exception e) {
                 e.printStackTrace();
                 runOnUiThread(() -> {
-                    if (tvTop1 != null) tvTop1.setText("Aún no hay puntos registrados");
+                    if (tvTop1 != null) tvTop1.setText(getString(R.string.nopuntos));
                     if (tvTop2 != null) tvTop2.setVisibility(View.GONE);
                     if (tvTop3 != null) tvTop3.setVisibility(View.GONE);
                 });
             }
         });
 
-        // Manejar navegación si venimos de otra actividad para ver el perfil
+        //manejar navegación si venimos de otra actividad para ver el perfil
         handleIntent(getIntent());
     }
 
@@ -172,7 +161,7 @@ public class MainActivity extends BaseActivity {
 
     private void handleIntent(Intent intent) {
         if (intent != null && intent.getBooleanExtra("show_profile", false)) {
-            // Abrir perfil si se solicita
+            //abrir perfil si se solicita
             View fragmentContainer = findViewById(R.id.fragment_container);
             View contenidoPrincipal = findViewById(R.id.contenido_principal);
             Toolbar toolbar = findViewById(R.id.toolbar);
@@ -245,7 +234,7 @@ public class MainActivity extends BaseActivity {
                 is.close();
             } catch (Exception e) {
                 e.printStackTrace();
-                runOnUiThread(() -> Toast.makeText(MainActivity.this, "Error al cargar el clima", Toast.LENGTH_SHORT).show());
+                runOnUiThread(() -> Toast.makeText(MainActivity.this, getString(R.string.weather_error), Toast.LENGTH_SHORT).show());
             }
         });
     }

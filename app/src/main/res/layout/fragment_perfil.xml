@@ -18,6 +18,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Mi Perfil"
+            android:fontFamily="@font/playfair_semibolditalic"
             android:textSize="28sp"
             android:textStyle="bold"
             android:textColor="?attr/colorPrimary"
@@ -44,7 +45,8 @@
             style="@style/Widget.MaterialComponents.Button.OutlinedButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Cambiar Foto" />
+            android:text="@string/tomarfoto"
+            android:fontFamily="@font/playfair_regular"/>
         <TextView
             android:id="@+id/tvMisPuntos"
             android:layout_width="wrap_content"
@@ -62,7 +64,9 @@
                 android:id="@+id/et_nombre_completo"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Nombre completo"
+                android:fontFamily="@font/playfair_regular"
+                android:textStyle="italic"
+                android:hint="@string/nombre"
                 android:inputType="textPersonName" />
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -75,7 +79,9 @@
                 android:id="@+id/et_email"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Correo Electrónico"
+                android:hint="@string/correo"
+                android:fontFamily="@font/playfair_regular"
+                android:textStyle="italic"
                 android:inputType="textEmailAddress" />
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -88,7 +94,9 @@
                 android:id="@+id/et_nombre_usuario"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Nombre de usuario"
+                android:hint="@string/usNombre"
+                android:fontFamily="@font/playfair_regular"
+                android:textStyle="italic"
                 android:inputType="text" />
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -102,14 +110,16 @@
                 android:id="@+id/et_password"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Nueva Contraseña (Opcional)"
+                android:hint="@string/contrasena"
+                android:fontFamily="@font/playfair_regular"
+                android:textStyle="italic"
                 android:inputType="textPassword" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Facultad:"
+            android:text="@string/fac"
             android:textColor="@android:color/darker_gray"
             android:layout_marginTop="12dp"
             android:layout_marginBottom="4dp"/>
@@ -127,7 +137,8 @@
             android:layout_marginTop="24dp"
             android:layout_marginBottom="24dp"
             android:backgroundTint="?attr/colorPrimary"
-            android:text="Guardar Cambios"
+            android:text="@string/guardar"
+            android:fontFamily="@font/playfair_regular"
             android:textColor="@android:color/white"
             android:textSize="18sp" />
         <Button
@@ -135,7 +146,9 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:text="Cerrar sesión"
+            android:text="@string/cerrar_s"
+            android:fontFamily="@font/playfair_regular"
+            android:textStyle="bold"
             android:textColor="@android:color/white"
             android:backgroundTint="#D32F2F" />
     </LinearLayout>

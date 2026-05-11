@@ -24,7 +24,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
-                android:text="Crear Cuenta"
+                android:text="@string/crearcuenta"
+                android:fontFamily="@font/playfair_semibolditalic"
                 android:textColor="?attr/colorPrimary"
                 android:textSize="32sp"
                 android:textStyle="bold" />
@@ -50,7 +51,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
-                android:text="Tomar Foto" />
+                android:text="@string/tomarfoto"
+                android:fontFamily="@font/playfair_regular"/>
 
             <com.google.android.material.textfield.TextInputLayout
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
@@ -61,7 +63,9 @@
                     android:id="@+id/et_registro_nombre"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="Nombre completo"
+                    android:hint="@string/nombre"
+                    android:fontFamily="@font/playfair_regular"
+                    android:textStyle="italic"
                     android:inputType="textPersonName" />
             </com.google.android.material.textfield.TextInputLayout>
 
@@ -74,7 +78,9 @@
                     android:id="@+id/et_registro_email"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="Correo electrónico"
+                    android:hint="@string/correo"
+                    android:fontFamily="@font/playfair_regular"
+                    android:textStyle="italic"
                     android:inputType="textEmailAddress" />
             </com.google.android.material.textfield.TextInputLayout>
 
@@ -87,7 +93,9 @@
                     android:id="@+id/et_registro_usuario"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="Nombre de usuario"
+                    android:hint="@string/usNombre"
+                    android:fontFamily="@font/playfair_regular"
+                    android:textStyle="italic"
                     android:inputType="text" />
             </com.google.android.material.textfield.TextInputLayout>
 
@@ -101,19 +109,24 @@
                     android:id="@+id/et_registro_pass"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="Contraseña"
+                    android:hint="@string/contrasena"
+                    android:fontFamily="@font/playfair_regular"
+                    android:textStyle="italic"
                     android:inputType="textPassword" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Selecciona tu facultad:"
+                android:text="@string/fac"
+                android:fontFamily="@font/playfair_regular"
+                android:textStyle="italic"
                 android:textColor="@android:color/darker_gray"
                 android:layout_marginBottom="4dp"/>
 
             <Spinner
                 android:id="@+id/spinner_facultad"
+                android:fontFamily="@font/playfair_regular"
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
                 android:layout_marginBottom="24dp"
@@ -125,7 +138,8 @@
                 android:layout_height="60dp"
                 android:layout_marginBottom="24dp"
                 android:backgroundTint="?attr/colorPrimary"
-                android:text="Registrarse"
+                android:text="@string/registrarse"
+                android:fontFamily="@font/playfair_semibolditalic"
                 android:textColor="@android:color/white"
                 android:textSize="18sp" />
 

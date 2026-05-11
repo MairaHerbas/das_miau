@@ -13,6 +13,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/language"
+            android:fontFamily="@font/playfair_regular"
             android:textStyle="bold"
             android:textSize="18sp" />
 
@@ -22,11 +23,13 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp">
             <RadioButton
+                android:fontFamily="@font/playfair_regular"
                 android:id="@+id/rbSpanish"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/spanish" />
             <RadioButton
+                android:fontFamily="@font/playfair_regular"
                 android:id="@+id/rbEnglish"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -34,6 +37,7 @@
         </RadioGroup>
 
         <TextView
+            android:fontFamily="@font/playfair_regular"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/theme"
@@ -46,11 +50,13 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp">
             <RadioButton
+                android:fontFamily="@font/playfair_regular"
                 android:id="@+id/rbLight"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/light_mode" />
             <RadioButton
+                android:fontFamily="@font/playfair_regular"
                 android:id="@+id/rbDark"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -58,6 +64,7 @@
         </RadioGroup>
 
         <TextView
+            android:fontFamily="@font/playfair_regular"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/primary_color"
@@ -69,26 +76,31 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
             <RadioButton
+                android:fontFamily="@font/playfair_regular"
                 android:id="@+id/rbBlue"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/blue" />
             <RadioButton
+                android:fontFamily="@font/playfair_regular"
                 android:id="@+id/rbGreen"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/green" />
             <RadioButton
+                android:fontFamily="@font/playfair_regular"
                 android:id="@+id/rbRed"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/red" />
             <RadioButton
+                android:fontFamily="@font/playfair_regular"
                 android:id="@+id/rbPink"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/pink" />
             <RadioButton
+                android:fontFamily="@font/playfair_regular"
                 android:id="@+id/rbPurple"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

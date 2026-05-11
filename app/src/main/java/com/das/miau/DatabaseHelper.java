@@ -27,7 +27,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private final Context context;
     private SQLiteDatabase database;
 
-    // Clase auxiliar para guardar paradas con su distancia
+    //clase auxiliar para guardar paradas con su distancia
     public static class NearbyStop {
         BusStop stop;
         float distance;
@@ -38,7 +38,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
     }
 
-    // Clase auxiliar para evaluar combinaciones de paradas
+    //clase auxiliar para evaluar combinaciones de paradas
     private static class CandidateConnection {
         BusStop originStop;
         BusStop destinationStop;
@@ -84,16 +84,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public void openDatabase() {
         String dbPath = context.getDatabasePath(DB_NAME).getPath();
         if (database == null || !database.isOpen()) {
-            // Cambiamos a READ_WRITE para poder crear los índices
+            //cambiamos a READ_WRITE para poder crear los índices
             database = SQLiteDatabase.openDatabase(dbPath, null, SQLiteDatabase.OPEN_READWRITE);
-            crearIndices(); // Llamamos al optimizador
+            crearIndices(); //llamamos al optimizador
         }
     }
-
-    // AÑADE ESTE MÉTODO JUSTO DEBAJO
     private void crearIndices() {
         try {
-            // Estos índices hacen que buscar paradas y shapes pase de tardar segundos a milisegundos
+            //estos índices hacen que buscar paradas y shapes pase de tardar segundos a milisegundos
             database.execSQL("CREATE INDEX IF NOT EXISTS idx_st_stop_bilbo ON stop_times_bilbobus_limpio(stop_id)");
             database.execSQL("CREATE INDEX IF NOT EXISTS idx_st_trip_bilbo ON stop_times_bilbobus_limpio(trip_id)");
             database.execSQL("CREATE INDEX IF NOT EXISTS idx_shape_bilbo ON shapes_bilbobus_limpio(shape_id)");
@@ -142,8 +140,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return line.trim().toUpperCase().replaceFirst("^0+", "");
     }
 
-    // Convierte tiempo GTFS (HH:mm:ss) a segundos. Soporta > 24h
-    private long getGtfSeconds(String gtfsTime) {
+    private long getGtfSeconds(String gtfsTime) { //conversion tiempo GTFS (HH:mm:ss) a segundos
         if (gtfsTime == null) return -1;
         try {
             String[] parts = gtfsTime.split(":");
@@ -157,8 +154,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
     }
 
-    // Obtiene el próximo horario válido GTFS
-    private long[] getTripTiming(String originStopId, String destinationStopId, String line, String network, long minDepartureTime, long currentSecs) {
+    private long[] getTripTiming(String originStopId, String destinationStopId, String line, String network, long minDepartureTime, long currentSecs) {//obtener el próximo horario válido gtfs
         openDatabase();
         String tableSuffix = network.equalsIgnoreCase("bizkaibus") ? "_bizkaibus_limpio" : "_bilbobus_limpio";
 
@@ -187,7 +183,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         long bestDep = -1;
         long bestArr = -1;
         long minWait = Long.MAX_VALUE;
-        long MAX_WAIT = 45 * 60; // 45 min
+        long MAX_WAIT = 45 * 60; //45 min
 
         try (Cursor cursor = database.rawQuery(sql, new String[]{todayDate, originStopId, destinationStopId, line, todayDate})) {
             while (cursor.moveToNext()) {
@@ -200,12 +196,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     continue;
                 }
 
-                // Asegurar que la llegada es siempre posterior a la salida
+                //asegurar que la llegada es siempre después d la salida
                 if (arrSecs < depSecs) arrSecs += 86400;
 
                 long waitTime = depSecs - minDepartureTime;
-
-                // Buscar la próxima salida válida
+                //buscar la próxima salida válida
                 if (waitTime >= 0 && waitTime < MAX_WAIT && waitTime < minWait) {
                     minWait = waitTime;
                     bestDep = depSecs;
@@ -222,7 +217,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return null;
     }
 
-    // Obtener próximos buses
+    //obtener próximos buses
     public List<Long> getNextDepartures(String originStopId, String destinationStopId, String line, String network, long minDepartureTime) {
         openDatabase();
         String tableSuffix = network.equalsIgnoreCase("bizkaibus") ? "_bizkaibus_limpio" : "_bilbobus_limpio";
@@ -267,15 +262,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return departures;
     }
 
-    //Busca paradas cercanas y las devuelve ordenadas por distancia
+    //busca paradas cercanas y las devuelve ordenadas por distancia
     public List<NearbyStop> getNearbyStops(double lat, double lon) {
         List<NearbyStop> stops = new ArrayList<>();
         openDatabase();
 
         Log.d(TAG, ">>> Escaneando paradas cerca de: " + lat + ", " + lon);
 
-        // 1. Filtro SQL muy básico para no descartar nada por culpa de las comas/puntos
-        // Buscamos todas y filtramos la distancia en Java para evitar errores de CAST en SQL
         String query = "SELECT stop_id, stop_name, stop_lat, stop_lon, 'bilbobus' FROM stops_bilbobus_limpio " +
                 "UNION ALL " +
                 "SELECT stop_id, stop_name, stop_lat, stop_lon, 'bizkaibus' FROM stops_bizkaibus_limpio";
@@ -324,7 +317,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return lines;
     }
 
-    // Valida si un autobús va realmente del origen al destino comprobando stop_sequence en GTFS
+    //valida si un autobús va realmente del origen al destino comprobando stop_sequence en GTFS
     private boolean isCorrectDirection(String originStopId, String destinationStopId, String line, String red) {
         openDatabase();
         String table = red.equalsIgnoreCase("bizkaibus") ? "_bizkaibus_limpio" : "_bilbobus_limpio";
@@ -372,7 +365,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             }
         }
 
-        // Ordenar inicialmente por distancia geográfica total
+        //ordenar inicialmente por distancia geográfica total
         Collections.sort(pairs, new Comparator<CandidateConnection>() {
             @Override
             public int compare(CandidateConnection c1, CandidateConnection c2) {
@@ -380,7 +373,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             }
         });
 
-        // Clase local para evaluar el tiempo total de una ruta
+        //clase local para evaluar el tiempo total de una ruta
         class RouteOption {
             BusConnection connection;
             double totalTime;
@@ -394,7 +387,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         int candidatesChecked = 0;
         for (CandidateConnection cand : pairs) {
-            // Solo evaluar máximo 15 combinaciones de paradas más cercanas
+            //solo evaluar máximo 15 combinaciones de paradas más cercanas
             if (candidatesChecked >= 15 && !options.isEmpty()) break;
 
             BusStop oStop = cand.originStop;
@@ -408,17 +401,16 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 String nO = normalizeLine(oL);
                 if (nO.isEmpty()) continue;
 
-                // Solo considerar si la línea llega al destino
+                //solo consideramos si la línea llega al destino
                 if (dStop.getLines().contains(oL)) {
-                    // Validar sentido real
+                    //validar sentido real
                     if (!isCorrectDirection(oStop.getStopId(), dStop.getStopId(), oL, oStop.getNetwork())) {
                         continue;
                     }
                     candidatesChecked++;
                     double walkToOrigin = cand.originDistance / walkSpeed;
                     double walkToDest = cand.destinationDistance / walkSpeed;
-
-                    // Buscar el próximo viaje real en GTFS (getTripTiming valida dirección, calendario y normaliza tiempo)
+                    //buscar el próximo viaje real en GTFS (getTripTiming valida dirección, calendario y normaliza tiempo)
                     long[] timings = getTripTiming(oStop.getStopId(), dStop.getStopId(), oL, oStop.getNetwork(), (long)(currentSecs + walkToOrigin), currentSecs);
 
                     if (timings != null) {
@@ -442,7 +434,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                         BusConnection bc = new BusConnection(oL, oStop, dStop);
                         bc.setTotalTimeSec(totalTime);
                         
-                        // Guardar datos detallados para la UI
+                        //guardar datos detallados para la UI
                         bc.setWalkToOriginSec(walkToOrigin);
                         bc.setWaitTimeSec(waitTime);
                         bc.setRideTimeSec(rideTime);
@@ -455,7 +447,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     }
                 }
             }
-            // Limitar a las mejores opciones finales para comparar
+            //limitar a las mejores opciones finales para comparar
             if (options.size() >= 5) break;
         }
 
@@ -554,10 +546,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         int startIndex = -1;
         int endIndex = -1;
-        float minDistanceOrigin = 150; // Radio máximo de 150m para considerar que "pasa por la parada"
+        float minDistanceOrigin = 150; //radio máximo de 150m para considerar que "pasa por la parada"
         float minDistanceDest = 150;
 
-        // Encontrar el punto más cercano al origen en TODA la lista
+        //encontrar el punto más cercano al origen en toda la lista
         for (int i = 0; i < allPoints.size(); i++) {
             float dist = getFastDistanceMeters(origin.getLat(), origin.getLon(), allPoints.get(i).getLatitude(), allPoints.get(i).getLongitude());            if (dist < minDistanceOrigin) {
                 minDistanceOrigin = dist;
@@ -565,10 +557,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             }
         }
 
-        // Si no encontramos el origen cerca del shape, abortamos
-        if (startIndex == -1) return null;
+        if (startIndex == -1) return null; //si no encontramos el origen cerca del shape, abortamos
 
-        // Encontrar el punto más cercano al destino PERO SOLO después del origen
+        // Encontrar el punto más cercano al destino pero después del origen
         for (int i = startIndex; i < allPoints.size(); i++) {
             float dist = getDistance(destination.getLat(), destination.getLon(), allPoints.get(i));
             if (dist < minDistanceDest) {
@@ -577,7 +568,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             }
         }
 
-        // Si no encontramos destino después del origen, intentamos buscar el más cercano en toda la lista
+        //si no encontramos destino después del origen, intentamos buscar el más cercano en toda la lista
         if (endIndex == -1) {
             for (int i = 0; i < startIndex; i++) {
                 float dist = getDistance(destination.getLat(), destination.getLon(), allPoints.get(i));
@@ -600,7 +591,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return null;
     }
 
-    // Distancia rápida aproximada
+    //distancia rápida aprox
     private float getFastDistanceMeters(double lat1, double lon1, double lat2, double lon2) {
         double dLat = lat1 - lat2;
         double dLon = lon1 - lon2;
@@ -619,7 +610,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         long[] timings = getTripTiming(originStopId, destinationStopId, line, network, currentSecs, currentSecs);
         if (timings != null) {
             long duration = timings[1] - timings[0];
-            if (duration < 0) duration += 86400; // Ajuste por cambio de día
+            if (duration < 0) duration += 86400; //ajuste por cambio de día
             return (double) duration;
         }
         return 0;
