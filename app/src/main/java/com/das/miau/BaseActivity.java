@@ -69,6 +69,7 @@ public abstract class BaseActivity extends AppCompatActivity {
                         R.string.open_nav, R.string.close_nav);
                 drawerLayout.addDrawerListener(toggle);
                 toggle.syncState();
+                toggle.getDrawerArrowDrawable().setColor(getResources().getColor(R.color.white));
             }
 
             if (navigationView != null) {
