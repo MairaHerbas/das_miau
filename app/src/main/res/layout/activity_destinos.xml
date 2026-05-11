@@ -32,7 +32,6 @@
                 android:text="@string/select_destination"
                 android:fontFamily="@font/playfair_regular"
                 android:textStyle="bold"
-                android:textColor="@color/black"
                 android:textSize="20sp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"

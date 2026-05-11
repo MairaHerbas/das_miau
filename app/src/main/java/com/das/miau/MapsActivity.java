@@ -459,7 +459,7 @@ public class MapsActivity extends BaseActivity {
         TextView tvNextTitle = view.findViewById(R.id.tv_bs_next_buses_title);
 
         int totalMin = (int) Math.ceil(bc.getTotalTimeSec() / 60);
-        if (tvTitle != null) tvTitle.setText(getString(R.string.linea) + bc.getLine() + " • " + totalMin + " min total");
+        if (tvTitle != null) tvTitle.setText(getString(R.string.linea) + " " + bc.getLine() + " • " + totalMin + " min total");
 
         if (tvWalkOrigin != null) tvWalkOrigin.setText(getString(R.string.caminahasta) + (int)(bc.getWalkToOriginSec()/60) + " min (" + (int)bc.getWalkOriginMeters() + "m)");
         if (tvOriginStop != null) tvOriginStop.setText(bc.getOriginStop().getStopName());
