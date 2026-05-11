@@ -70,6 +70,7 @@ public class PerfilFragment extends Fragment {
 
         Button btnHacerFoto = root.findViewById(R.id.btn_hacer_foto);
         Button btnGuardar = root.findViewById(R.id.btn_guardar_perfil);
+        Button btnCerrarSesion = root.findViewById(R.id.btn_cerrar_sesion);
 
         android.content.SharedPreferences prefs = requireActivity().getSharedPreferences("MisPreferencias", android.content.Context.MODE_PRIVATE);
         idUsuario = prefs.getString("id_usuario", "1");
@@ -87,11 +88,7 @@ public class PerfilFragment extends Fragment {
 
         int facIdGuardada = prefs.getInt("facultad_id", 1);
         descargarFacultades(facIdGuardada);
-
-        // =========================================================
-        // --- DESCARGAR IMAGEN DEL SERVIDOR (IGUAL QUE EN DAS_proyecto) ---
-        // =========================================================
-        // El timestamp (?v=...) evita que Android guarde en caché la foto antigua
+        //descargar img del servidor
         String urlImagen = "http://34.175.63.186:81/uploads/" + usernameGuardado + ".jpg?v=" + System.currentTimeMillis();
 
         new Thread(() -> {
@@ -173,7 +170,7 @@ public class PerfilFragment extends Fragment {
                 new ActivityResultContracts.RequestPermission(),
                 isGranted -> {
                     if (isGranted) { abrirCamara(); }
-                    else { Toast.makeText(getContext(), "Permisos de cámara denegados", Toast.LENGTH_SHORT).show(); }
+                    else { Toast.makeText(getContext(), getString(R.string.permisodenegado), Toast.LENGTH_SHORT).show(); }
                 });
 
         // Listeners
@@ -186,17 +183,16 @@ public class PerfilFragment extends Fragment {
         });
 
         btnGuardar.setOnClickListener(v -> subirPerfilAlServidor());
-
+        btnCerrarSesion.setOnClickListener(v -> cerrarSesion());
         return root;
     }
 
     private void abrirCamara() {
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new Date());
         String nombrefich = "IMG_" + timeStamp + "_";
-        File directorio = requireActivity().getFilesDir(); // Método usado en tu otro proyecto
+        File directorio = requireActivity().getFilesDir();
         try {
             File fichImg = File.createTempFile(nombrefich, ".jpg", directorio);
-            // IMPORTANTE: Aquí se enlaza con el AndroidManifest de miau
             uriImagen = FileProvider.getUriForFile(requireContext(), "com.das.miau.provider", fichImg);
             Intent elIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
             elIntent.putExtra(MediaStore.EXTRA_OUTPUT, uriImagen);
@@ -257,7 +253,7 @@ public class PerfilFragment extends Fragment {
         int pos = spinnerFacultad.getSelectedItemPosition();
         int facultadIdReal = listaIdsFacultades.get(pos);
 
-        Toast.makeText(getContext(), "Guardando cambios...", Toast.LENGTH_SHORT).show();
+        Toast.makeText(getContext(), getString(R.string.guardando), Toast.LENGTH_SHORT).show();
 
         new Thread(() -> {
             try {
@@ -294,12 +290,50 @@ public class PerfilFragment extends Fragment {
 
                 if (conexion.getResponseCode() == 200) {
                     requireActivity().runOnUiThread(() -> {
-                        Toast.makeText(getContext(), "Perfil actualizado correctamente", Toast.LENGTH_SHORT).show();
+                        // === NUEVO: ACTUALIZAR MEMORIA LOCAL (SharedPreferences) ===
+                        android.content.SharedPreferences prefs = requireActivity().getSharedPreferences("MisPreferencias", android.content.Context.MODE_PRIVATE);
+                        android.content.SharedPreferences.Editor editor = prefs.edit();
+
+                        editor.putString("nombre_usuario", nuevoUsername);
+                        editor.putString("nombre_completo", nuevoNombre);
+                        editor.putString("email", nuevoEmail);
+                        editor.putInt("facultad_id", facultadIdReal);
+
+                        // Solo actualizamos la contraseña si el usuario escribió algo nuevo
+                        if (!nuevaPass.isEmpty()) {
+                            editor.putString("password_usuario", nuevaPass);
+                        }
+
+                        editor.apply(); // Guardar cambios localmente
+
+                        // Actualizar las variables del fragmento para que coincidan
+                        usernameGuardado = nuevoUsername;
+
+                        Toast.makeText(getContext(), getString(R.string.perfilact), Toast.LENGTH_SHORT).show();
                     });
                 }
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }).start();
+    }
+    private void cerrarSesion() {
+        android.content.SharedPreferences prefs = requireActivity().getSharedPreferences("MisPreferencias", android.content.Context.MODE_PRIVATE);
+        android.content.SharedPreferences.Editor editor = prefs.edit();
+
+        editor.remove("id_usuario");
+        editor.remove("nombre_usuario");
+        editor.remove("password_usuario");
+        editor.remove("nombre_completo");
+        editor.remove("email");
+        editor.remove("facultad_id");
+        editor.remove("puntos_usuario");
+        //aplicamos cambios
+        editor.apply();
+        Toast.makeText(getContext(), getString(R.string.sesioncerrada), Toast.LENGTH_SHORT).show();
+        //redirigimos
+        Intent intent = new Intent(getActivity(), MainActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
     }
 }

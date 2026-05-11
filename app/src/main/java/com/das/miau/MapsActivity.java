@@ -337,8 +337,12 @@ public class MapsActivity extends BaseActivity {
 
             // Gestionar visibilidad del botón Hacer
             if (btnHacerRuta != null) {
-                // Evaluamos si es coche (tram o driving)
-                if ("tram".equals(transportMode) || "driving".equals(transportMode)) {
+                // 1. Comprobamos si el usuario ha iniciado sesión
+                String username = prefs.getString("nombre_usuario", "");
+                boolean isLogged = !username.isEmpty();
+
+                // 2. Ocultamos si NO está loggeado o si es coche
+                if (!isLogged || "tram".equals(transportMode) || "driving".equals(transportMode)) {
                     btnHacerRuta.setVisibility(View.GONE);
                 } else {
                     btnHacerRuta.setVisibility(View.VISIBLE);
@@ -549,15 +553,10 @@ public class MapsActivity extends BaseActivity {
     private void showToast(String message) {
         mainHandler.post(() -> Toast.makeText(this, message, Toast.LENGTH_SHORT).show());
     }
-// =============================================================
-    // --- GAMIFICACIÓN: Métodos de Acción y Base de Datos ---
-    // =============================================================
-
     private void hacerRuta() {
-        // Sumar 10 puntos en BD
         sumarPuntosEnBD(10);
 
-        // Bloquear nuevas rutas
+        //que no nos deje hacer otras rutas a no ser que deshagamos la planeada
         long tiempoEstimadoMillis = duracionMinutosRutaActual * 60 * 1000L;
         long tiempoFin = System.currentTimeMillis() + tiempoEstimadoMillis;
 
@@ -565,16 +564,16 @@ public class MapsActivity extends BaseActivity {
         editor.putLong("tiempo_fin_ruta", tiempoFin);
         editor.apply();
 
-        btnHacerRuta.setText("Deshacer");
+        btnHacerRuta.setText(getString(R.string.deshacer));
         btnHacerRuta.setOnClickListener(v -> mostrarDialogoDeshacer());
-        Toast.makeText(this, "¡Ruta iniciada! Has ganado 10 puntos.", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, getString(R.string.rutaini), Toast.LENGTH_SHORT).show();
     }
 
     private void mostrarDialogoDeshacer() {
         new AlertDialog.Builder(this)
-                .setTitle("¿Seguro?")
-                .setMessage("Si deshaces la ruta se restarán los 10 puntos correspondientes.")
-                .setPositiveButton("Aceptar", (dialog, which) -> {
+                .setTitle(getString(R.string.seguro))
+                .setMessage(getString(R.string.desruta))
+                .setPositiveButton(getString(R.string.aceptar), (dialog, which) -> {
                     // Restar puntos en BD
                     sumarPuntosEnBD(-10);
 
@@ -583,11 +582,11 @@ public class MapsActivity extends BaseActivity {
                     editor.putLong("tiempo_fin_ruta", 0); // Reseteamos el tiempo
                     editor.apply();
 
-                    btnHacerRuta.setText("Hacer");
+                    btnHacerRuta.setText(getString(R.string.hacer));
                     btnHacerRuta.setOnClickListener(v -> hacerRuta());
-                    Toast.makeText(this, "Ruta cancelada. Se han restado los puntos.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, getString(R.string.rutaCancelada), Toast.LENGTH_SHORT).show();
                 })
-                .setNegativeButton("Cancelar", null)
+                .setNegativeButton(getString(R.string.cancelar), null)
                 .show();
     }
 
@@ -609,7 +608,7 @@ public class MapsActivity extends BaseActivity {
                 os.close();
 
                 if (conn.getResponseCode() == 200) {
-                    // Actualizamos los puntos localmente en SharedPreferences
+                    //act puntos localmente
                     int puntosActuales = prefs.getInt("puntos_usuario", 0);
                     SharedPreferences.Editor editor = prefs.edit();
                     editor.putInt("puntos_usuario", puntosActuales + puntosCambio);

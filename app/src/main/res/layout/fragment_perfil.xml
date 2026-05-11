@@ -130,5 +130,13 @@
             android:text="Guardar Cambios"
             android:textColor="@android:color/white"
             android:textSize="18sp" />
+        <Button
+            android:id="@+id/btn_cerrar_sesion"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Cerrar sesión"
+            android:textColor="@android:color/white"
+            android:backgroundTint="#D32F2F" />
     </LinearLayout>
 </ScrollView>

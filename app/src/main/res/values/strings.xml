@@ -48,4 +48,15 @@
     <string name="registrando">Registrando usuario...</string>
     <string name="lineas">Líneas y horarios</string>
     <string name="inicio">Inicio</string>
+    <string name="guardando">Guardando...</string>
+    <string name="sesioncerrada">Sesión cerrada correctamente</string>
+
+    <string name="rutaCancelada">Ruta cancelada, se han restado los puntos.</string>
+    <string name="cancelar">Cancelar</string>
+    <string name="aceptar">Aceptar</string>
+    <string name="hacer">Hacer</string>
+    <string name="desruta">Si deshaces la ruta se restarán los 10 puntos correspondientes</string>
+    <string name="seguro">¿Seguro?</string>
+    <string name="rutaini">¡Ruta iniciada! Has ganado 10 puntos</string>
+    <string name="deshacer">Deshacer</string>
 </resources>
