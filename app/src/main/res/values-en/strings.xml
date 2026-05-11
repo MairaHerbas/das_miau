@@ -94,5 +94,12 @@
     <string name="coched">In car until the destination</string>
     <string name="caminard">Walking until the destination</string>
 
-    <string name="linea">Line</string>
+    <string name="linea">Line </string>
+    <string name="caminahasta">Walk to • </string>
+    <string name="esp">Wait •  </string>
+    <string name="trBus">Bus journey •  </string>
+    <string name="hastadestino">Until destination •  </string>
+
+    <string name="puntos">Points</string>
+
 </resources>

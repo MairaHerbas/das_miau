@@ -83,7 +83,7 @@ public class PerfilFragment extends Fragment {
 
         int puntosGuardados = prefs.getInt("puntos_usuario", 0);
         if (tvMisPuntos != null) {
-            tvMisPuntos.setText("Puntos contribuidos: " + puntosGuardados);
+            tvMisPuntos.setText(getString(R.string.puntos) + ": " + puntosGuardados);
         }
 
         int facIdGuardada = prefs.getInt("facultad_id", 1);
@@ -108,9 +108,7 @@ public class PerfilFragment extends Fragment {
                 Log.e(TAG, "Error descargando la foto del servidor", e);
             }
         }).start();
-        // =========================================================
-
-        // --- SOLUCIÓN DE CÁMARA IGUAL QUE EN TU OTRO PROYECTO ---
+        //cámara
         takePictureLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> {
@@ -290,7 +288,7 @@ public class PerfilFragment extends Fragment {
 
                 if (conexion.getResponseCode() == 200) {
                     requireActivity().runOnUiThread(() -> {
-                        // === NUEVO: ACTUALIZAR MEMORIA LOCAL (SharedPreferences) ===
+                        //act memoria local
                         android.content.SharedPreferences prefs = requireActivity().getSharedPreferences("MisPreferencias", android.content.Context.MODE_PRIVATE);
                         android.content.SharedPreferences.Editor editor = prefs.edit();
 
@@ -299,14 +297,13 @@ public class PerfilFragment extends Fragment {
                         editor.putString("email", nuevoEmail);
                         editor.putInt("facultad_id", facultadIdReal);
 
-                        // Solo actualizamos la contraseña si el usuario escribió algo nuevo
+                        //contraseña solo si el us la ha reescrito
                         if (!nuevaPass.isEmpty()) {
                             editor.putString("password_usuario", nuevaPass);
                         }
 
-                        editor.apply(); // Guardar cambios localmente
+                        editor.apply(); //cambios localmente
 
-                        // Actualizar las variables del fragmento para que coincidan
                         usernameGuardado = nuevoUsername;
 
                         Toast.makeText(getContext(), getString(R.string.perfilact), Toast.LENGTH_SHORT).show();
