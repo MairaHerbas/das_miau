@@ -417,9 +417,7 @@ public class MapsActivity extends BaseActivity {
         } else {
             // Ruta única
             if (!segments.isEmpty()) {
-                // Si el modo es bus, usamos el color de preferencias; si no, azul por defecto (o primario también)
-                int routeColor = "bus".equals(transportMode) ? primaryColor : Color.BLUE;
-                addPolyline(segments.get(0), routeColor);
+                addPolyline(segments.get(0), primaryColor);
             }
             if (tvLineaNumero != null) tvLineaNumero.setVisibility(View.GONE);
             if (btnInfoDetalles != null) btnInfoDetalles.setVisibility(View.GONE);
