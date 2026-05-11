@@ -459,14 +459,14 @@ public class MapsActivity extends BaseActivity {
         TextView tvNextTitle = view.findViewById(R.id.tv_bs_next_buses_title);
 
         int totalMin = (int) Math.ceil(bc.getTotalTimeSec() / 60);
-        if (tvTitle != null) tvTitle.setText("Línea " + bc.getLine() + " • " + totalMin + " min total");
+        if (tvTitle != null) tvTitle.setText(getString(R.string.linea) + bc.getLine() + " • " + totalMin + " min total");
 
-        if (tvWalkOrigin != null) tvWalkOrigin.setText("Camina hasta parada • " + (int)(bc.getWalkToOriginSec()/60) + " min (" + (int)bc.getWalkOriginMeters() + "m)");
+        if (tvWalkOrigin != null) tvWalkOrigin.setText(getString(R.string.caminahasta) + (int)(bc.getWalkToOriginSec()/60) + " min (" + (int)bc.getWalkOriginMeters() + "m)");
         if (tvOriginStop != null) tvOriginStop.setText(bc.getOriginStop().getStopName());
-        if (tvWaitTime != null) tvWaitTime.setText("Espera • " + (int)(bc.getWaitTimeSec()/60) + " min");
-        if (tvRideTime != null) tvRideTime.setText("Trayecto en bus • " + (int)(bc.getRideTimeSec()/60) + " min");
+        if (tvWaitTime != null) tvWaitTime.setText(getString(R.string.esp) + (int)(bc.getWaitTimeSec()/60) + " min");
+        if (tvRideTime != null) tvRideTime.setText(getString(R.string.trBus) + (int)(bc.getRideTimeSec()/60) + " min");
         if (tvDestStop != null) tvDestStop.setText(bc.getDestinationStop().getStopName());
-        if (tvWalkDest != null) tvWalkDest.setText("Hasta destino • " + (int)(bc.getWalkToDestSec()/60) + " min (" + (int)bc.getWalkDestMeters() + "m)");
+        if (tvWalkDest != null) tvWalkDest.setText(getString(R.string.hastadestino) + (int)(bc.getWalkToDestSec()/60) + " min (" + (int)bc.getWalkDestMeters() + "m)");
 
         List<Long> next = bc.getNextDeparturesMin();
         if (next != null && !next.isEmpty()) {

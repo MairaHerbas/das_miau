@@ -19,7 +19,7 @@ import androidx.work.WorkManager;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
-public class LoginRegistroActivity extends AppCompatActivity {
+public class LoginRegistroActivity extends BaseActivity {
 
     private EditText usuario;
     private EditText contrasena;

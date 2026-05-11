@@ -37,8 +37,10 @@ import java.io.InputStreamReader;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
+import java.util.ArrayList;
+import java.util.List;
 
-public class RegistroActivity extends AppCompatActivity {
+public class RegistroActivity extends BaseActivity {
 
     private ImageView imgPerfil;
     private EditText etNombre, etEmail, etUsuario, etPass;
@@ -48,6 +50,8 @@ public class RegistroActivity extends AppCompatActivity {
 
     private ActivityResultLauncher<Intent> takePictureLauncher;
     private ActivityResultLauncher<String> pedirPermisoCamara;
+
+    private List<Integer> listaIdsFacultades = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -112,19 +116,24 @@ public class RegistroActivity extends AppCompatActivity {
                     while ((line = reader.readLine()) != null) { response.append(line); }
                     reader.close();
 
-                    // Parsear la respuesta como un array JSON de textos
                     org.json.simple.parser.JSONParser parser = new org.json.simple.parser.JSONParser();
                     org.json.simple.JSONArray jsonArray = (org.json.simple.JSONArray) parser.parse(response.toString());
 
-                    // Crear una lista de Strings normal y corriente
-                    java.util.List<String> listaNombres = new java.util.ArrayList<>();
+                    List<String> listaNombres = new ArrayList<>();
+                    listaIdsFacultades.clear(); //limpiamos la lista por si aca
+
+                    //parsear el JSON como Objeto, igual que en el perfil ---
                     for (Object obj : jsonArray) {
-                        listaNombres.add((String) obj);
+                        org.json.simple.JSONObject fac = (org.json.simple.JSONObject) obj;
+                        int id = Integer.parseInt(fac.get("id").toString());
+                        String nombre = (String) fac.get("nombre");
+
+                        listaNombres.add(nombre);
+                        listaIdsFacultades.add(id);
                     }
 
-                    // Metemos la lista en el Spinner
                     runOnUiThread(() -> {
-                        android.widget.ArrayAdapter<String> adapter = new android.widget.ArrayAdapter<>(
+                        ArrayAdapter<String> adapter = new ArrayAdapter<>(
                                 RegistroActivity.this, android.R.layout.simple_spinner_dropdown_item, listaNombres);
                         spinnerFacultad.setAdapter(adapter);
                     });
@@ -181,9 +190,14 @@ public class RegistroActivity extends AppCompatActivity {
         String email = etEmail.getText().toString().trim();
         String usuario = etUsuario.getText().toString().trim();
         String pass = etPass.getText().toString().trim();
+        int pos = spinnerFacultad.getSelectedItemPosition();
 
-        // Obtenemos el ID sumando 1 a la posición de la lista
-        int facultadId = spinnerFacultad.getSelectedItemPosition() + 1;
+        if (pos == -1 || listaIdsFacultades.isEmpty()) {
+            Toast.makeText(this, getString(R.string.cargando), Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        int facultadId = listaIdsFacultades.get(pos);
 
         if (nombre.isEmpty() || email.isEmpty() || usuario.isEmpty() || pass.isEmpty()) {
             Toast.makeText(this, getString(R.string.rellenacampos), Toast.LENGTH_SHORT).show();
@@ -249,16 +263,24 @@ public class RegistroActivity extends AppCompatActivity {
                         String mensaje = (String) json.get("mensaje");
 
                         if ("ok".equals(status)) {
+                            //extraemos el id_usuario del json que nos da php
                             String idUsuario = String.valueOf(json.get("id_usuario"));
 
                             SharedPreferences prefs = getSharedPreferences("MisPreferencias", MODE_PRIVATE);
                             SharedPreferences.Editor editor = prefs.edit();
+
+                            //aseguramos que guarde "1" temporalmente si php no lo devuelve
+                            if (idUsuario == null || idUsuario.equals("null")) {
+                                idUsuario = "1";
+                            }
                             editor.putString("id_usuario", idUsuario);
                             editor.putString("nombre_usuario", usuario);
                             editor.putString("password_usuario", pass);
                             editor.putString("nombre_completo", nombre);
                             editor.putString("email", email);
                             editor.putInt("facultad_id", facultadId);
+                            //puntos=0
+                            editor.putInt("puntos_usuario", 0);
                             editor.apply();
 
                             Toast.makeText(RegistroActivity.this, mensaje, Toast.LENGTH_LONG).show();

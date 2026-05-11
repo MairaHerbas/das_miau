@@ -94,5 +94,12 @@
     <string name="bicid">En bicicleta hasta el destino</string>
     <string name="coched">En coche hasta el destino</string>
     <string name="caminard">Caminando hasta el destino</string>
-    <string name="linea">Línea</string>
+    <string name="linea">Línea </string>
+    <string name="caminahasta">Camina hasta parada • </string>
+    <string name="esp">Espera •  </string>
+    <string name="trBus">Trayecto en bus •  </string>
+    <string name="hastadestino">Hasta destino •  </string>
+
+    <string name="puntos">Puntos</string>
+
 </resources>
