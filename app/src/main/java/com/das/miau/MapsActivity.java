@@ -45,6 +45,10 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+// --- GAMIFICACIÓN: Importaciones añadidas ---
+import android.content.SharedPreferences;
+import android.app.AlertDialog;
+
 public class MapsActivity extends BaseActivity {
 
     private MapView map = null;
@@ -65,6 +69,11 @@ public class MapsActivity extends BaseActivity {
     private ImageView btnInfoDetalles;
     private DatabaseHelper dbHelper;
     private BusConnection lastConnection;
+
+    // --- GAMIFICACIÓN: Variables añadidas ---
+    private android.widget.Button btnHacerRuta;
+    private SharedPreferences prefs;
+    private int duracionMinutosRutaActual = 0;
 
     private static class RouteResult {
         List<GeoPoint> points;
@@ -95,6 +104,10 @@ public class MapsActivity extends BaseActivity {
         tvProximosBuses = findViewById(R.id.tv_proximos_buses);
         tvRutaResumen = findViewById(R.id.tv_ruta_resumen);
         btnInfoDetalles = findViewById(R.id.btn_info_detalles);
+
+        // --- GAMIFICACIÓN: Inicialización ---
+        prefs = getSharedPreferences("MisPreferencias", MODE_PRIVATE);
+        btnHacerRuta = findViewById(R.id.btnHacerRuta); // ¡Asegúrate de que este ID existe en activity_maps.xml!
 
         if (btnInfoDetalles != null) {
             btnInfoDetalles.setOnClickListener(v -> {
@@ -230,15 +243,9 @@ public class MapsActivity extends BaseActivity {
             totalDurationSec = -1;
         } else {
             String osrmMode;
-            if ("bike".equals(transportMode)) {
-                // Para bici, la API de OSRM exige la palabra "cycling"
-                osrmMode = "cycling";
-            } else if ("foot".equals(transportMode)) {
-                // Para ir a pie, la API de OSRM exige la palabra "walking"
-                osrmMode = "walking";
-            } else {
-                osrmMode = "driving";
-            }
+            if ("bike".equals(transportMode)) osrmMode = "cycling";
+            else if ("foot".equals(transportMode)) osrmMode = "walking";
+            else osrmMode = "driving";
 
             RouteResult result = fetchOSRMRoute(userLocation, destinationPoint, osrmMode);
             segments.add(result.points);
@@ -250,14 +257,9 @@ public class MapsActivity extends BaseActivity {
                 }
             }
 
-            if ("foot".equals(transportMode)) {
-                totalDurationSec = distanceMeters / 1.1;
-            } else if ("bike".equals(transportMode)) {
-                totalDurationSec = distanceMeters / 4.16;
-            } else {
-                totalDurationSec = result.duration;
-            }
-            Log.d("ROUTE_DEBUG", "Modo: " + transportMode + ", Distancia: " + (int)distanceMeters + "m, Duración: " + (int)totalDurationSec + "s");
+            if ("foot".equals(transportMode)) totalDurationSec = distanceMeters / 1.1;
+            else if ("bike".equals(transportMode)) totalDurationSec = distanceMeters / 4.16;
+            else totalDurationSec = result.duration;
         }
 
         final BusConnection finalConnection = connection;
@@ -290,7 +292,6 @@ public class MapsActivity extends BaseActivity {
         String response = downloadUrl(urlStr);
         JSONObject json = new JSONObject(response);
         if (!"Ok".equals(json.getString("code"))) {
-            Log.e("ROUTE_DEBUG", "OSRM error " + json.optString("code") + " for mode " + mode);
             return new RouteResult(new ArrayList<>(), 0);
         }
 
@@ -318,8 +319,11 @@ public class MapsActivity extends BaseActivity {
         int primaryColor = getPrimaryColorInt();
 
         // Mostrar tiempo estimado
+        // --- GAMIFICACIÓN: Lógica del botón Hacer/Deshacer ---
         if (durationSec >= 0) {
             int minutes = (int) Math.ceil(durationSec / 60);
+            duracionMinutosRutaActual = minutes; // Guardamos para la gamificación
+
             String timeText;
             if (minutes < 60) {
                 timeText = minutes + " min";
@@ -330,8 +334,35 @@ public class MapsActivity extends BaseActivity {
                 tvTiempoTotal.setText(timeText);
                 tvTiempoTotal.setVisibility(View.VISIBLE);
             }
+
+            // Gestionar visibilidad del botón Hacer
+            if (btnHacerRuta != null) {
+                // 1. Comprobamos si el usuario ha iniciado sesión
+                String username = prefs.getString("nombre_usuario", "");
+                boolean isLogged = !username.isEmpty();
+
+                // 2. Ocultamos si NO está loggeado o si es coche
+                if (!isLogged || "tram".equals(transportMode) || "driving".equals(transportMode)) {
+                    btnHacerRuta.setVisibility(View.GONE);
+                } else {
+                    btnHacerRuta.setVisibility(View.VISIBLE);
+
+                    long tiempoFinRutaActiva = prefs.getLong("tiempo_fin_ruta", 0);
+                    long tiempoActual = System.currentTimeMillis();
+
+                    if (tiempoActual < tiempoFinRutaActiva) {
+                        btnHacerRuta.setText("Deshacer");
+                        btnHacerRuta.setOnClickListener(v -> mostrarDialogoDeshacer());
+                    } else {
+                        btnHacerRuta.setText("Hacer");
+                        btnHacerRuta.setOnClickListener(v -> hacerRuta());
+                    }
+                }
+            }
+
         } else {
             if (tvTiempoTotal != null) tvTiempoTotal.setVisibility(View.GONE);
+            if (btnHacerRuta != null) btnHacerRuta.setVisibility(View.GONE); // Ocultar si no hay ruta
         }
 
         List<GeoPoint> allPointsForCamera = new ArrayList<>();
@@ -351,9 +382,9 @@ public class MapsActivity extends BaseActivity {
             addMarker(new GeoPoint(connection.getOriginStop().getLat(), connection.getOriginStop().getLon()),
                      "Subir: " + connection.getOriginStop().getStopName(), 
                      "Línea " + connection.getLine(), R.drawable.ic_bus, primaryColor);
-            
-            addMarker(new GeoPoint(connection.getDestinationStop().getLat(), connection.getDestinationStop().getLon()), 
-                     "Bajar: " + connection.getDestinationStop().getStopName(), 
+
+            addMarker(new GeoPoint(connection.getDestinationStop().getLat(), connection.getDestinationStop().getLon()),
+                     "Bajar: " + connection.getDestinationStop().getStopName(),
                      "Línea " + connection.getLine(), R.drawable.ic_bus, primaryColor);
             
             allPointsForCamera.add(new GeoPoint(connection.getOriginStop().getLat(), connection.getOriginStop().getLon()));
@@ -476,7 +507,7 @@ public class MapsActivity extends BaseActivity {
         m.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
         m.setTitle(title);
         m.setSnippet(snippet);
-        
+
         if (iconRes != null) {
             Drawable icon = ContextCompat.getDrawable(this, iconRes);
             if (icon != null) {
@@ -487,7 +518,7 @@ public class MapsActivity extends BaseActivity {
                 m.setIcon(icon);
             }
         }
-        
+
         map.getOverlays().add(m);
         routeMarkers.add(m);
     }
@@ -521,5 +552,71 @@ public class MapsActivity extends BaseActivity {
 
     private void showToast(String message) {
         mainHandler.post(() -> Toast.makeText(this, message, Toast.LENGTH_SHORT).show());
+    }
+    private void hacerRuta() {
+        sumarPuntosEnBD(10);
+
+        //que no nos deje hacer otras rutas a no ser que deshagamos la planeada
+        long tiempoEstimadoMillis = duracionMinutosRutaActual * 60 * 1000L;
+        long tiempoFin = System.currentTimeMillis() + tiempoEstimadoMillis;
+
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putLong("tiempo_fin_ruta", tiempoFin);
+        editor.apply();
+
+        btnHacerRuta.setText(getString(R.string.deshacer));
+        btnHacerRuta.setOnClickListener(v -> mostrarDialogoDeshacer());
+        Toast.makeText(this, getString(R.string.rutaini), Toast.LENGTH_SHORT).show();
+    }
+
+    private void mostrarDialogoDeshacer() {
+        new AlertDialog.Builder(this)
+                .setTitle(getString(R.string.seguro))
+                .setMessage(getString(R.string.desruta))
+                .setPositiveButton(getString(R.string.aceptar), (dialog, which) -> {
+                    // Restar puntos en BD
+                    sumarPuntosEnBD(-10);
+
+                    // Liberar el bloqueo
+                    SharedPreferences.Editor editor = prefs.edit();
+                    editor.putLong("tiempo_fin_ruta", 0); // Reseteamos el tiempo
+                    editor.apply();
+
+                    btnHacerRuta.setText(getString(R.string.hacer));
+                    btnHacerRuta.setOnClickListener(v -> hacerRuta());
+                    Toast.makeText(this, getString(R.string.rutaCancelada), Toast.LENGTH_SHORT).show();
+                })
+                .setNegativeButton(getString(R.string.cancelar), null)
+                .show();
+    }
+
+    private void sumarPuntosEnBD(int puntosCambio) {
+        String username = prefs.getString("nombre_usuario", "");
+        if (username.isEmpty()) return; // No hay usuario logueado
+
+        executorService.execute(() -> {
+            try {
+                URL url = new URL("http://34.175.63.186:81/update_ponits.php");
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setRequestMethod("POST");
+                conn.setDoOutput(true);
+
+                String params = "username=" + username + "&puntos=" + puntosCambio;
+                java.io.OutputStream os = conn.getOutputStream();
+                os.write(params.getBytes());
+                os.flush();
+                os.close();
+
+                if (conn.getResponseCode() == 200) {
+                    //act puntos localmente
+                    int puntosActuales = prefs.getInt("puntos_usuario", 0);
+                    SharedPreferences.Editor editor = prefs.edit();
+                    editor.putInt("puntos_usuario", puntosActuales + puntosCambio);
+                    editor.apply();
+                }
+            } catch (Exception e) {
+                Log.e("GAMIFICACION", "Error actualizando puntos", e);
+            }
+        });
     }
 }

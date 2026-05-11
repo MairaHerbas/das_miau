@@ -109,6 +109,7 @@ public class LoginRegistroActivity extends AppCompatActivity {
                 editor.putString("password_usuario", contrasena.getText().toString());
 
                 if (json.containsKey("id_usuario")) editor.putString("id_usuario", String.valueOf(json.get("id_usuario")));
+                if(json.containsKey("puntos_usuario")) editor.putInt("puntos_usuario", Integer.parseInt(String.valueOf(json.get("puntos_usuario"))));
                 if (json.containsKey("nombre_completo")) editor.putString("nombre_completo", (String) json.get("nombre_completo"));
                 if (json.containsKey("email")) editor.putString("email", (String) json.get("email"));
 

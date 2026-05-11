@@ -47,4 +47,15 @@
     <string name="registrando">Registering user...</string>
     <string name="lineas">Lines and schedules</string>
     <string name="inicio">Home</string>
+    <string name="guardando">Saving...</string>
+    <string name="sesioncerrada">Session closed successfully</string>
+
+    <string name="rutaCancelada">Route canceled, you have lost the points.</string>
+    <string name="cancelar">Cancel</string>
+    <string name="aceptar">Accept</string>
+    <string name="hacer">Do</string>
+    <string name="desruta">If you cancel the route, you will lose the 10 points</string>
+    <string name="seguro">Sure?</string>
+    <string name="rutaini">You have won 10 points!</string>
+    <string name="deshacer">Undo</string>
 </resources>
