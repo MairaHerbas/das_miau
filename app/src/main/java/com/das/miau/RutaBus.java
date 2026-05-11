@@ -10,8 +10,6 @@ public class RutaBus {
         this.nombreCorto = nombreCorto;
         this.nombreLargo = nombreLargo;
     }
-
-    public String getIdRuta() { return idRuta; }
     public String getNombreCorto() { return nombreCorto; }
     public String getNombreLargo() { return nombreLargo; }
 }

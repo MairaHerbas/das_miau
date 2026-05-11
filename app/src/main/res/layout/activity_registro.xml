@@ -16,6 +16,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_margin="10dp"
             android:gravity="center_horizontal"
             android:orientation="vertical"
             android:padding="24dp">
@@ -24,8 +25,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
-                android:text="@string/crearcuenta"
                 android:fontFamily="@font/playfair_semibolditalic"
+                android:text="@string/crearcuenta"
                 android:textColor="?attr/colorPrimary"
                 android:textSize="32sp"
                 android:textStyle="bold" />
@@ -51,22 +52,23 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
-                android:text="@string/tomarfoto"
-                android:fontFamily="@font/playfair_regular"/>
+                android:fontFamily="@font/playfair_regular"
+                android:text="@string/tomarfoto" />
 
             <com.google.android.material.textfield.TextInputLayout
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="12dp">
+
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/et_registro_nombre"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="@string/nombre"
                     android:fontFamily="@font/playfair_regular"
-                    android:textStyle="italic"
-                    android:inputType="textPersonName" />
+                    android:hint="@string/nombre"
+                    android:inputType="textPersonName"
+                    android:textStyle="italic" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
@@ -74,14 +76,15 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="12dp">
+
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/et_registro_email"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="@string/correo"
                     android:fontFamily="@font/playfair_regular"
-                    android:textStyle="italic"
-                    android:inputType="textEmailAddress" />
+                    android:hint="@string/correo"
+                    android:inputType="textEmailAddress"
+                    android:textStyle="italic" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
@@ -89,14 +92,15 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="12dp">
+
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/et_registro_usuario"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="@string/usNombre"
                     android:fontFamily="@font/playfair_regular"
-                    android:textStyle="italic"
-                    android:inputType="text" />
+                    android:hint="@string/usNombre"
+                    android:inputType="text"
+                    android:textStyle="italic" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
@@ -105,32 +109,33 @@
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="12dp"
                 app:passwordToggleEnabled="true">
+
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/et_registro_pass"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="@string/contrasena"
                     android:fontFamily="@font/playfair_regular"
-                    android:textStyle="italic"
-                    android:inputType="textPassword" />
+                    android:hint="@string/contrasena"
+                    android:inputType="textPassword"
+                    android:textStyle="italic" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/fac"
+                android:layout_marginBottom="4dp"
                 android:fontFamily="@font/playfair_regular"
-                android:textStyle="italic"
+                android:text="@string/fac"
                 android:textColor="@android:color/darker_gray"
-                android:layout_marginBottom="4dp"/>
+                android:textStyle="italic" />
 
             <Spinner
                 android:id="@+id/spinner_facultad"
-                android:fontFamily="@font/playfair_regular"
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
                 android:layout_marginBottom="24dp"
-                android:background="@android:drawable/btn_dropdown"/>
+                android:background="@android:drawable/btn_dropdown"
+                android:fontFamily="@font/playfair_regular" />
 
             <Button
                 android:id="@+id/btn_completar_registro"
@@ -138,8 +143,8 @@
                 android:layout_height="60dp"
                 android:layout_marginBottom="24dp"
                 android:backgroundTint="?attr/colorPrimary"
-                android:text="@string/registrarse"
                 android:fontFamily="@font/playfair_semibolditalic"
+                android:text="@string/registrarse"
                 android:textColor="@android:color/white"
                 android:textSize="18sp" />
 
