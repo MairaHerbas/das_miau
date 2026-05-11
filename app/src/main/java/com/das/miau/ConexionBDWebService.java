@@ -25,34 +25,31 @@ public class ConexionBDWebService extends Worker {
     public Result doWork() {
         String usuario = getInputData().getString("usuario");
         String contrasena = getInputData().getString("contrasena");
-        String tipo = getInputData().getString("tipo"); // si es inicio de sesión o registro
+        String tipo = getInputData().getString("tipo"); //si es inicio de sesión o registro
 
         String dir = "http://34.175.63.186:81/" + tipo + ".php";
         HttpURLConnection urlConnection = null;
         String rdo = "";
 
         try {
-            // Configuración de la conexión
             URL destino = new URL(dir);
             urlConnection = (HttpURLConnection) destino.openConnection();
             urlConnection.setConnectTimeout(5000);
             urlConnection.setReadTimeout(5000);
 
-            // Preparamos los parámetros
             Uri.Builder builder = new Uri.Builder()
                     .appendQueryParameter("usuario", usuario)
                     .appendQueryParameter("contrasena", contrasena);
             String parametros = builder.build().getEncodedQuery();
 
-            // Envío
+            //enviamos
             urlConnection.setRequestMethod("POST");
             urlConnection.setDoOutput(true);
             urlConnection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
             PrintWriter out = new PrintWriter(urlConnection.getOutputStream());
             out.print(parametros);
             out.close();
-
-            // Leer respuesta
+            //leemos respuesta
             int statusCode = urlConnection.getResponseCode();
             if (statusCode == 200) {
                 BufferedInputStream inputStream = new BufferedInputStream(urlConnection.getInputStream());
@@ -64,7 +61,7 @@ public class ConexionBDWebService extends Worker {
                 inputStream.close();
             }
 
-            // Mandamos respuesta a la actividad
+            //mandamos resp a la actividad
             Data outputData = new Data.Builder().putString("resultado", rdo).build();
             return Result.success(outputData);
 

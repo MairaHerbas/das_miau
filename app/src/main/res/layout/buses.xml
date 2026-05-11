@@ -25,6 +25,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/lineas_bus"
+            android:fontFamily="@font/playfair_semibolditalic"
             android:textSize="24sp"
             android:textStyle="bold"
             android:padding="16dp"
@@ -40,16 +41,21 @@
             <com.google.android.material.tabs.TabItem
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Bilbobus" />
+                android:text="Bilbobus"
+                android:fontFamily="@font/playfair_regular"
+                android:textStyle="bold"/>
 
             <com.google.android.material.tabs.TabItem
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Bizkaibus" />
+                android:text="Bizkaibus"
+                android:fontFamily="@font/playfair_regular"
+                android:textStyle="bold"/>
         </com.google.android.material.tabs.TabLayout>
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recycler_rutas"
+            android:fontFamily="@font/playfair_regular"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"

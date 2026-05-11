@@ -105,9 +105,8 @@ public class MapsActivity extends BaseActivity {
         tvRutaResumen = findViewById(R.id.tv_ruta_resumen);
         btnInfoDetalles = findViewById(R.id.btn_info_detalles);
 
-        // --- GAMIFICACIÓN: Inicialización ---
         prefs = getSharedPreferences("MisPreferencias", MODE_PRIVATE);
-        btnHacerRuta = findViewById(R.id.btnHacerRuta); // ¡Asegúrate de que este ID existe en activity_maps.xml!
+        btnHacerRuta = findViewById(R.id.btnHacerRuta);
 
         if (btnInfoDetalles != null) {
             btnInfoDetalles.setOnClickListener(v -> {
@@ -175,7 +174,7 @@ public class MapsActivity extends BaseActivity {
                     );
                 }
 
-                // Procesar ruta encontrada o ruta por defecto
+                //procesar ruta encontrada o ruta por defecto
                 processRouteResult(connection, destinationPoint);
 
             } catch (Exception e) {
@@ -193,10 +192,9 @@ public class MapsActivity extends BaseActivity {
             GeoPoint stop1 = new GeoPoint(connection.getOriginStop().getLat(), connection.getOriginStop().getLon());
             GeoPoint stop2 = new GeoPoint(connection.getDestinationStop().getLat(), connection.getDestinationStop().getLon());
 
-            // Tramo 1: Caminar a la parada (OSRM)
+            //1º-caminar a la parada (OSRM)
             RouteResult r1 = fetchOSRMRoute(userLocation, stop1, "walking");
-            
-            // Tramo 2: Autobús (GTFS Shapes)
+            //2º-autobús (GTFS Shapes)
             List<GeoPoint> busPoints;
             double busDuration;
 
@@ -222,7 +220,7 @@ public class MapsActivity extends BaseActivity {
                         connection.getLine(),
                         connection.getOriginStop().getNetwork()
                 );
-                // Si no hay horario disponible para calcular duración, estimamos por distancia (aprox 30km/h)
+                //si no hay horario disponible para calcular duración, estimamos por distancia (aprox 30km/h)
                 if (busDuration <= 0) busDuration = stop1.distanceToAsDouble(stop2) / 8.3;
             } else {
                 Log.d("BUS_DEBUG", ">>> SHAPE NO ENCONTRADO para " + connection.getLine() + ". Usando OSRM driving fallback.");
@@ -231,7 +229,7 @@ public class MapsActivity extends BaseActivity {
                 busDuration = r2.duration;
             }
 
-            // Tramo 3: Caminar al destino (OSRM)
+            //3º-caminar al destino (OSRM)
             RouteResult r3 = fetchOSRMRoute(stop2, destinationPoint, "walking");
 
             segments.add(r1.points);
@@ -239,7 +237,7 @@ public class MapsActivity extends BaseActivity {
             segments.add(r3.points);
             totalDurationSec = connection.getTotalTimeSec();
         } else if ("bus".equals(transportMode)) {
-            // Si no hay conexión de bus, no queremos mostrar ruta alternativa de coche
+            //si no hay conexión de bus, no queremos mostrar ruta alternativa de coche
             totalDurationSec = -1;
         } else {
             String osrmMode;
@@ -271,19 +269,19 @@ public class MapsActivity extends BaseActivity {
         String urlStr;
 
         if ("walking".equals(mode)) {
-            // Servidor exclusivo de peatones (conoce aceras, plazas y el Casco Viejo)
+            //peatones
             urlStr = "https://routing.openstreetmap.de/routed-foot/route/v1/foot/" +
                     start.getLongitude() + "," + start.getLatitude() + ";" +
                     end.getLongitude() + "," + end.getLatitude() + "?overview=full&geometries=geojson";
 
         } else if ("cycling".equals(mode)) {
-            // Servidor exclusivo de bicicletas (prioriza bidegorris)
+            //bicis
             urlStr = "https://routing.openstreetmap.de/routed-bike/route/v1/bike/" +
                     start.getLongitude() + "," + start.getLatitude() + ";" +
                     end.getLongitude() + "," + end.getLatitude() + "?overview=full&geometries=geojson";
 
         } else {
-            // Servidor por defecto (coches)
+            //por defecto (coches)
             urlStr = "https://router.project-osrm.org/route/v1/driving/" +
                     start.getLongitude() + "," + start.getLatitude() + ";" +
                     end.getLongitude() + "," + end.getLatitude() + "?overview=full&geometries=geojson";
@@ -309,20 +307,19 @@ public class MapsActivity extends BaseActivity {
 
     private void updateUI(List<List<GeoPoint>> segments, GeoPoint destinationPoint, BusConnection connection, double durationSec) {
         this.lastConnection = connection;
-        // Limpiar previos
+        //limpiar previos
         for (Polyline p : routePolylines) map.getOverlays().remove(p);
         for (Marker m : routeMarkers) map.getOverlays().remove(m);
         routePolylines.clear();
         routeMarkers.clear();
 
-        // Obtener el color primario de las preferencias
+        //obtener el color primario de las preferencias
         int primaryColor = getPrimaryColorInt();
 
-        // Mostrar tiempo estimado
-        // --- GAMIFICACIÓN: Lógica del botón Hacer/Deshacer ---
+        //mostrar tiempo estimado
         if (durationSec >= 0) {
             int minutes = (int) Math.ceil(durationSec / 60);
-            duracionMinutosRutaActual = minutes; // Guardamos para la gamificación
+            duracionMinutosRutaActual = minutes; //importante guardar para los puntos
 
             String timeText;
             if (minutes < 60) {
@@ -335,26 +332,25 @@ public class MapsActivity extends BaseActivity {
                 tvTiempoTotal.setVisibility(View.VISIBLE);
             }
 
-            // Gestionar visibilidad del botón Hacer
+            //visibilidad del botón Hacer
             if (btnHacerRuta != null) {
-                // 1. Comprobamos si el usuario ha iniciado sesión
+                //si el usuario ha iniciado sesión
                 String username = prefs.getString("nombre_usuario", "");
                 boolean isLogged = !username.isEmpty();
 
-                // 2. Ocultamos si NO está loggeado o si es coche
+                //si no loggeado o coche -> ocultar
                 if (!isLogged || "tram".equals(transportMode) || "driving".equals(transportMode)) {
                     btnHacerRuta.setVisibility(View.GONE);
                 } else {
                     btnHacerRuta.setVisibility(View.VISIBLE);
-
                     long tiempoFinRutaActiva = prefs.getLong("tiempo_fin_ruta", 0);
                     long tiempoActual = System.currentTimeMillis();
 
                     if (tiempoActual < tiempoFinRutaActiva) {
-                        btnHacerRuta.setText("Deshacer");
+                        btnHacerRuta.setText(getString(R.string.deshacer));
                         btnHacerRuta.setOnClickListener(v -> mostrarDialogoDeshacer());
                     } else {
-                        btnHacerRuta.setText("Hacer");
+                        btnHacerRuta.setText(getString(R.string.hacer));
                         btnHacerRuta.setOnClickListener(v -> hacerRuta());
                     }
                 }
@@ -362,7 +358,7 @@ public class MapsActivity extends BaseActivity {
 
         } else {
             if (tvTiempoTotal != null) tvTiempoTotal.setVisibility(View.GONE);
-            if (btnHacerRuta != null) btnHacerRuta.setVisibility(View.GONE); // Ocultar si no hay ruta
+            if (btnHacerRuta != null) btnHacerRuta.setVisibility(View.GONE); //ocultar si no hay ruta
         }
 
         List<GeoPoint> allPointsForCamera = new ArrayList<>();
@@ -370,15 +366,15 @@ public class MapsActivity extends BaseActivity {
         allPointsForCamera.add(destinationPoint);
 
         if (connection != null && segments.size() == 3) {
-            // Dibujar 3 segmentos con colores distintos
-            // Tramo 1: Caminando (Gris)
+            //dibujar 3 tramos con colores distintos
+            //1º-caminando ->gris
             addPolyline(segments.get(0), Color.GRAY);
-            // Tramo 2: Autobús (Color de preferencias)
+            //2º-autobús ->color de preferencias
             addPolyline(segments.get(1), primaryColor);
-            // Tramo 3: Caminando (Gris)
+            //3º-caminando -> gris
             addPolyline(segments.get(2), Color.GRAY);
 
-            // Marcadores de paradas con icono de bus y color de preferencias
+            //marcadores de paradas con icono de bus y color de preferencias
             addMarker(new GeoPoint(connection.getOriginStop().getLat(), connection.getOriginStop().getLon()),
                      "Subir: " + connection.getOriginStop().getStopName(), 
                      "Línea " + connection.getLine(), R.drawable.ic_bus, primaryColor);
@@ -399,7 +395,7 @@ public class MapsActivity extends BaseActivity {
             }
             if (btnInfoDetalles != null) btnInfoDetalles.setVisibility(View.VISIBLE);
 
-            // Próximos buses
+            //prox buses
             List<Long> next = connection.getNextDeparturesMin();
             if (tvProximosBuses != null) {
                 if (next != null && !next.isEmpty()) {
@@ -424,21 +420,21 @@ public class MapsActivity extends BaseActivity {
             if (tvProximosBuses != null) tvProximosBuses.setVisibility(View.GONE);
             if (tvRutaResumen != null) {
                 if ("bus".equals(transportMode)) {
-                    tvRutaResumen.setText("No se encontró línea directa disponible");
+                    tvRutaResumen.setText(getString(R.string.nolinea));
                 } else if ("bike".equals(transportMode)) {
-                    tvRutaResumen.setText("En bicicleta hasta el destino");
+                    tvRutaResumen.setText(getString(R.string.bicid));
                 } else if ("tram".equals(transportMode)) {
-                    tvRutaResumen.setText("En coche hasta el destino");
+                    tvRutaResumen.setText(getString(R.string.coched));
                 } else {
-                    tvRutaResumen.setText("Caminando hasta el destino");
+                    tvRutaResumen.setText(getString(R.string.caminard));
                 }
             }
         }
 
-        // Marcador Destino Final
+        //marcador Destino Final
         addMarker(destinationPoint, "Destino: " + (destinoNombre != null ? destinoNombre : ""), "", null, null);
 
-        // Ajustar Cámara
+        //ajustar Cámara
         if (!allPointsForCamera.isEmpty()) {
             BoundingBox bbox = BoundingBox.fromGeoPoints(allPointsForCamera);
             map.zoomToBoundingBox(bbox.increaseByScale(1.3f), true);

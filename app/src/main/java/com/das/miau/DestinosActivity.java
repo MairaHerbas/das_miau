@@ -47,7 +47,7 @@ public class DestinosActivity extends BaseActivity {
     private List<CentroUniversitario> getListaCentros() {
         List<CentroUniversitario> centros = new ArrayList<>();
         try {
-            // Leer el archivo JSON desde la carpeta assets
+            //leemos json desde la carpeta assets
             InputStream is = getAssets().open("coordenadas_universidades.json");
             int size = is.available();
             byte[] buffer = new byte[size];

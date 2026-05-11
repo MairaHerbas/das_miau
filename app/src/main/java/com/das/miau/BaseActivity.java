@@ -36,7 +36,7 @@ public abstract class BaseActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        // Verificar si el tema ha cambiado mientras esta actividad estaba en segundo plano
+        //verificar si el tema ha cambiado mientras esta actividad estaba en segundo plano
         if (currentThemeId != prefManager.getThemeResource()) {
             recreate();
         }
@@ -78,7 +78,7 @@ public abstract class BaseActivity extends AppCompatActivity {
                     
                     if(itemId == R.id.nav_inicio) {
                         if (this instanceof MainActivity) {
-                            // Si ya estamos en MainActivity, quitamos fragmentos para volver al "Home"
+                            //si ya estamos en MainActivity, quitamos fragmentos para volver al "Home"
                             View fragmentContainer = findViewById(R.id.fragment_container);
                             View contenidoPrincipal = findViewById(R.id.contenido_principal);
                             if (fragmentContainer != null && contenidoPrincipal != null) {
@@ -90,7 +90,7 @@ public abstract class BaseActivity extends AppCompatActivity {
                                 }
                             }
                         } else {
-                            // Ir a Inicio y limpiar el stack de actividades anteriores (Transport, Maps, etc)
+                            //ir a Inicio y limpiar el stack de act anteriores
                             Intent intent = new Intent(this, MainActivity.class);
                             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                             startActivity(intent);
@@ -101,7 +101,6 @@ public abstract class BaseActivity extends AppCompatActivity {
                             startActivity(new Intent(this, LoginRegistroActivity.class));
                         } else {
                             if (this instanceof MainActivity) {
-                                // Estamos en Main, solo mostramos el fragmento
                                 View fragmentContainer = findViewById(R.id.fragment_container);
                                 View contenidoPrincipal = findViewById(R.id.contenido_principal);
                                 if (fragmentContainer != null && contenidoPrincipal != null) {
@@ -112,7 +111,6 @@ public abstract class BaseActivity extends AppCompatActivity {
                                     toolbar.setTitle(getString(R.string.miperfil));
                                 }
                             } else {
-                                // En otra actividad: vamos a Main y que él abra el perfil, limpiando el stack
                                 Intent intent = new Intent(this, MainActivity.class);
                                 intent.putExtra("show_profile", true);
                                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
@@ -121,11 +119,10 @@ public abstract class BaseActivity extends AppCompatActivity {
                         }
                     } else if (itemId == R.id.nav_lineas) {
                         if (!(this instanceof BusesActivity)) {
-                            if (this instanceof MainActivity) {
-                                // Desde Main simplemente abrimos Buses
+                            if (this instanceof MainActivity) {//desde MainActivity, abrimos Buses
                                 startActivity(new Intent(this, BusesActivity.class));
                             } else {
-                                // Desde otra (ej. Maps), pasamos por Main para limpiar el stack y luego abrir Buses
+                                //desde otra (ej. Maps), pasamos por Main para limpiar el stack y luego abrir Buses
                                 Intent intent = new Intent(this, MainActivity.class);
                                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                                 intent.putExtra("open_buses", true);

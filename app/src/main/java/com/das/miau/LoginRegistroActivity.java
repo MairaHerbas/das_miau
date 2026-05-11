@@ -24,7 +24,7 @@ public class LoginRegistroActivity extends AppCompatActivity {
     private EditText usuario;
     private EditText contrasena;
     private Button btnEntrar, btnRegistrar;
-    private static final String TAG = "LoginRegistroDEBUG"; // Etiqueta para buscar rápido en Logcat
+    private static final String TAG = "LoginRegistroDEBUG";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -86,7 +86,7 @@ public class LoginRegistroActivity extends AppCompatActivity {
     }
 
     private void procesarResultado(String result) {
-        Log.d(TAG, "Respuesta cruda del servidor: " + result); // Ver qué JSON llega exactamente
+        Log.d(TAG, "Respuesta del servidor: " + result);
 
         if (result == null) {
             Log.e(TAG, "El resultado del servidor es null");

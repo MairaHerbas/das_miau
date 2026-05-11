@@ -59,4 +59,40 @@
     <string name="seguro">¿Seguro?</string>
     <string name="rutaini">¡Ruta iniciada! Has ganado 10 puntos</string>
     <string name="deshacer">Deshacer</string>
+
+    <string name="usuario">Usuario</string>
+    <string name="contrasena">Contraseña</string>
+    <string name="iniciarsesion">Iniciar sesión</string>
+    <string name="registrarse">Registrarse</string>
+
+    <string name="cargando">Cargando...</string>
+    <string name="to_fac">Top Facultades Sostenibles</string>
+    <string name="empruta">Empezar ruta</string>
+
+    <string name="crearcuenta">Crear cuenta</string>
+    <string name="tomarfoto">Hacer foto</string>
+    <string name="nombre">Nombre</string>
+    <string name="correo">Correo electrónico</string>
+    <string name="usNombre">Nombre de usuario</string>
+    <string name="fac">Selecciona tu facultad:</string>
+
+    <string name="lineamin">Línea -- • -- min total</string>
+    <string name="camina">Camina hasta parada • -- min (--m)</string>
+    <string name="paradao">PARADA ORIGEN</string>
+    <string name="espera">Espera • -- min</string>
+    <string name="trayectobus">Trayecto en bus • -- min</string>
+    <string name="paradad">PARADA DESTINO</string>
+    <string name="hastad">Hasta destino • -- min (--m)</string>
+    <string name="proxbus">Próximos buses</string>
+
+    <string name="guardar">Guardar cambios</string>
+    <string name="cerrar_s">Cerrar sesión</string>
+    <string name="parada">Parada A → Parada B</string>
+    <string name="nopuntos">Aún no hay puntos registrados</string>
+
+    <string name="nolinea">No se encontró línea directa disponible</string>
+    <string name="bicid">En bicicleta hasta el destino</string>
+    <string name="coched">En coche hasta el destino</string>
+    <string name="caminard">Caminando hasta el destino</string>
+    <string name="linea">Línea</string>
 </resources>

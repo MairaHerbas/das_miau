@@ -18,14 +18,14 @@
         android:id="@+id/tv_bs_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Línea -- • -- min total"
+        android:text="@string/lineamin"
         android:textSize="20sp"
         android:textStyle="bold"
         android:textColor="@android:color/black"
         android:gravity="center"
         android:layout_marginBottom="24dp"/>
 
-    <!-- Tramo 1: Caminar al origen -->
+    <!--caminar al origen-->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -42,7 +42,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
-            android:text="Camina hasta parada • -- min (--m)"
+            android:text="@string/camina"
             android:textSize="15sp"
             android:textColor="#616161"/>
     </LinearLayout>
@@ -64,7 +64,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
-            android:text="PARADA ORIGEN"
+            android:text="@string/paradao"
             android:textSize="16sp"
             android:textStyle="bold"
             android:textColor="@android:color/black"/>
@@ -87,7 +87,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
-            android:text="Espera • -- min"
+            android:text="@string/espera"
             android:textSize="15sp"
             android:textColor="#616161"/>
     </LinearLayout>
@@ -109,7 +109,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
-            android:text="Trayecto en bus • -- min"
+            android:text="@string/trayectobus"
             android:textSize="15sp"
             android:textColor="#616161"/>
     </LinearLayout>
@@ -131,7 +131,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
-            android:text="PARADA DESTINO"
+            android:text="@string/paradad"
             android:textSize="16sp"
             android:textStyle="bold"
             android:textColor="@android:color/black"/>
@@ -154,7 +154,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
-            android:text="Hasta destino • -- min (--m)"
+            android:text="@string/hastad"
             android:textSize="15sp"
             android:textColor="#616161"/>
     </LinearLayout>
@@ -170,7 +170,7 @@
         android:id="@+id/tv_bs_next_buses_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Próximos buses"
+        android:text="@string/proxbus"
         android:textSize="14sp"
         android:textColor="#757575"
         android:layout_marginBottom="8dp"/>
