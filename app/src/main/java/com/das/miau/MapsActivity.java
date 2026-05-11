@@ -265,13 +265,13 @@ public class MapsActivity extends BaseActivity {
     private RouteResult fetchOSRMRoute(GeoPoint start, GeoPoint end, String mode) throws Exception {
         String urlStr;
 
-        if ("foot".equals(transportMode)) {
+        if ("walking".equals(mode)) {
             // Servidor exclusivo de peatones (conoce aceras, plazas y el Casco Viejo)
             urlStr = "https://routing.openstreetmap.de/routed-foot/route/v1/foot/" +
                     start.getLongitude() + "," + start.getLatitude() + ";" +
                     end.getLongitude() + "," + end.getLatitude() + "?overview=full&geometries=geojson";
 
-        } else if ("bike".equals(transportMode)) {
+        } else if ("cycling".equals(mode)) {
             // Servidor exclusivo de bicicletas (prioriza bidegorris)
             urlStr = "https://routing.openstreetmap.de/routed-bike/route/v1/bike/" +
                     start.getLongitude() + "," + start.getLatitude() + ";" +
