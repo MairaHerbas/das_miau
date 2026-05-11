@@ -73,10 +73,10 @@ public class MainActivity extends BaseActivity {
                     if (fragment != null) {
                         getSupportFragmentManager().beginTransaction().remove(fragment).commit();
                         findViewById(R.id.contenido_principal).setVisibility(View.VISIBLE);
-                        if(toolbar != null) toolbar.setTitle("UniGo"); // Restaurar título original
+                        if(toolbar != null) toolbar.setTitle(R.string.app_name); // Restaurar título original
                     } else {
-                        setEnabled(false);
-                        getOnBackPressedDispatcher().onBackPressed();
+                        // Si estamos en la pantalla principal y no hay fragmentos, salimos de la app
+                        finish();
                     }
                 }
             }
@@ -158,6 +158,33 @@ public class MainActivity extends BaseActivity {
                 });
             }
         });
+
+        // Manejar navegación si venimos de otra actividad para ver el perfil
+        handleIntent(getIntent());
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        handleIntent(intent);
+    }
+
+    private void handleIntent(Intent intent) {
+        if (intent != null && intent.getBooleanExtra("show_profile", false)) {
+            // Abrir perfil si se solicita
+            View fragmentContainer = findViewById(R.id.fragment_container);
+            View contenidoPrincipal = findViewById(R.id.contenido_principal);
+            Toolbar toolbar = findViewById(R.id.toolbar);
+
+            if (fragmentContainer != null && contenidoPrincipal != null) {
+                contenidoPrincipal.setVisibility(View.GONE);
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.fragment_container, new PerfilFragment())
+                        .commit();
+                if (toolbar != null) toolbar.setTitle(getString(R.string.miperfil));
+            }
+        }
     }
 
     private void checkPermissionsAndGetLocation() {

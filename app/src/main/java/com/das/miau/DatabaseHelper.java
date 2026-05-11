@@ -274,23 +274,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         Log.d(TAG, ">>> Escaneando paradas cerca de: " + lat + ", " + lon);
 
-        // 1. Ampliamos la caja a 2 km  para campus grandes como Leioa
-        double radioBusqueda = 0.02;
-        String latMin = String.valueOf(lat - radioBusqueda);
-        String latMax = String.valueOf(lat + radioBusqueda);
-        String lonMin = String.valueOf(lon - radioBusqueda);
-        String lonMax = String.valueOf(lon + radioBusqueda);
-
-        // 2. Usamos REPLACE en SQL para cambiar las comas por puntos sobre la marcha
+        // 1. Filtro SQL muy básico para no descartar nada por culpa de las comas/puntos
+        // Buscamos todas y filtramos la distancia en Java para evitar errores de CAST en SQL
         String query = "SELECT stop_id, stop_name, stop_lat, stop_lon, 'bilbobus' FROM stops_bilbobus_limpio " +
-                "WHERE CAST(REPLACE(stop_lat, ',', '.') AS REAL) BETWEEN ? AND ? AND CAST(REPLACE(stop_lon, ',', '.') AS REAL) BETWEEN ? AND ? " +
                 "UNION ALL " +
-                "SELECT stop_id, stop_name, stop_lat, stop_lon, 'bizkaibus' FROM stops_bizkaibus_limpio " +
-                "WHERE CAST(REPLACE(stop_lat, ',', '.') AS REAL) BETWEEN ? AND ? AND CAST(REPLACE(stop_lon, ',', '.') AS REAL) BETWEEN ? AND ?";
+                "SELECT stop_id, stop_name, stop_lat, stop_lon, 'bizkaibus' FROM stops_bizkaibus_limpio";
 
-        String[] parametros = {latMin, latMax, lonMin, lonMax, latMin, latMax, lonMin, lonMax};
-
-        Cursor cursor = database.rawQuery(query, parametros);
+        Cursor cursor = database.rawQuery(query, null);
 
         if (cursor.moveToFirst()) {
             do {
@@ -300,10 +290,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 double sLon = parseDirtyCoordinate(cursor.getString(3));
                 String red = cursor.getString(4);
 
+                if (sLat == 0 || sLon == 0) continue;
+
                 float[] dist = new float[1];
                 Location.distanceBetween(lat, lon, sLat, sLon, dist);
 
-                if (dist[0] < 2000) {
+                if (dist[0] < 1000) {
                     BusStop stop = new BusStop(id, name, sLat, sLon);
                     stop.setNetwork(red);
                     stop.setLines(getLinesForStop(id, red));
@@ -314,7 +306,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         cursor.close();
 
         Collections.sort(stops, (o1, o2) -> Float.compare(o1.distance, o2.distance));
-        Log.d(TAG, "<<< Fin. Encontradas " + stops.size() + " en radio de 5000m.");
+        Log.d(TAG, "<<< Fin. Encontradas " + stops.size() + " en radio de 1000m.");
         return stops;
     }
 
@@ -398,7 +390,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         List<RouteOption> options = new ArrayList<>();
         Calendar now = Calendar.getInstance();
         long currentSecs = now.get(Calendar.HOUR_OF_DAY) * 3600L + now.get(Calendar.MINUTE) * 60L + now.get(Calendar.SECOND);
-        double walkSpeed = 1.2; // m/s
+        double walkSpeed = 1.1; // m/s
 
         int candidatesChecked = 0;
         for (CandidateConnection cand : pairs) {
@@ -565,7 +557,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         float minDistanceOrigin = 150; // Radio máximo de 150m para considerar que "pasa por la parada"
         float minDistanceDest = 150;
 
-        // PASO 1: Encontrar el punto más cercano al origen en TODA la lista
+        // Encontrar el punto más cercano al origen en TODA la lista
         for (int i = 0; i < allPoints.size(); i++) {
             float dist = getFastDistanceMeters(origin.getLat(), origin.getLon(), allPoints.get(i).getLatitude(), allPoints.get(i).getLongitude());            if (dist < minDistanceOrigin) {
                 minDistanceOrigin = dist;
@@ -576,7 +568,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         // Si no encontramos el origen cerca del shape, abortamos
         if (startIndex == -1) return null;
 
-        // PASO 2: Encontrar el punto más cercano al destino PERO SOLO después del origen
+        // Encontrar el punto más cercano al destino PERO SOLO después del origen
         for (int i = startIndex; i < allPoints.size(); i++) {
             float dist = getDistance(destination.getLat(), destination.getLon(), allPoints.get(i));
             if (dist < minDistanceDest) {
