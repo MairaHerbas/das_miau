@@ -15,13 +15,13 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.fragment.app.Fragment;
 
 import com.google.android.material.navigation.NavigationView;
 
 public abstract class BaseActivity extends AppCompatActivity {
-    // miau jjj
     protected PreferencesManager prefManager;
-    protected DrawerLayout drawerLayout; // Protected para poder usarlo en el OnBackPressed del MainActivity
+    protected DrawerLayout drawerLayout;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -49,7 +49,6 @@ public abstract class BaseActivity extends AppCompatActivity {
                 toolbar.setTitle(R.string.app_name);
             }
 
-            // --- LÓGICA DEL NAVIGATION DRAWER MOVIDA AQUÍ ---
             drawerLayout = findViewById(R.id.drawer_layout);
             NavigationView navigationView = findViewById(R.id.nav_view);
 
@@ -64,38 +63,65 @@ public abstract class BaseActivity extends AppCompatActivity {
             if (navigationView != null) {
                 navigationView.setNavigationItemSelectedListener(item -> {
                     int itemId = item.getItemId();
+                    
                     if(itemId == R.id.nav_inicio) {
-                        Intent intent = new Intent(this, MainActivity.class);
-                        startActivity(intent);
+                        if (this instanceof MainActivity) {
+                            // Si ya estamos en MainActivity, quitamos fragmentos para volver al "Home"
+                            View fragmentContainer = findViewById(R.id.fragment_container);
+                            View contenidoPrincipal = findViewById(R.id.contenido_principal);
+                            if (fragmentContainer != null && contenidoPrincipal != null) {
+                                Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.fragment_container);
+                                if (fragment != null) {
+                                    getSupportFragmentManager().beginTransaction().remove(fragment).commit();
+                                    contenidoPrincipal.setVisibility(View.VISIBLE);
+                                    toolbar.setTitle(R.string.app_name);
+                                }
+                            }
+                        } else {
+                            // Ir a Inicio y limpiar el stack de actividades anteriores (Transport, Maps, etc)
+                            Intent intent = new Intent(this, MainActivity.class);
+                            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                            startActivity(intent);
+                        }
                     }
                     else if (itemId == R.id.nav_perfil) {
                         if (!isUserLoggedIn()) {
-                            // no logueado -> te obligo
                             startActivity(new Intent(this, LoginRegistroActivity.class));
                         } else {
-                            // logueado -> te dejo entrar
-                            // Comprobamos si los contenedores existen (por si estamos en otra Activity que no sea MainActivity)
-                            View fragmentContainer = findViewById(R.id.fragment_container);
-                            View contenidoPrincipal = findViewById(R.id.contenido_principal);
-
-                            if (fragmentContainer != null && contenidoPrincipal != null) {
-                                contenidoPrincipal.setVisibility(View.GONE);
-                                getSupportFragmentManager().beginTransaction()
-                                        .replace(R.id.fragment_container, new PerfilFragment())
-                                        .commit();
-                                toolbar.setTitle(getString(R.string.miperfil));
+                            if (this instanceof MainActivity) {
+                                // Estamos en Main, solo mostramos el fragmento
+                                View fragmentContainer = findViewById(R.id.fragment_container);
+                                View contenidoPrincipal = findViewById(R.id.contenido_principal);
+                                if (fragmentContainer != null && contenidoPrincipal != null) {
+                                    contenidoPrincipal.setVisibility(View.GONE);
+                                    getSupportFragmentManager().beginTransaction()
+                                            .replace(R.id.fragment_container, new PerfilFragment())
+                                            .commit();
+                                    toolbar.setTitle(getString(R.string.miperfil));
+                                }
                             } else {
-                                // Si estamos en otra activity, podríamos redirigir al MainActivity para ver el perfil
-                                // Intent intent = new Intent(this, MainActivity.class);
-                                // startActivity(intent);
+                                // En otra actividad: vamos a Main y que él abra el perfil, limpiando el stack
+                                Intent intent = new Intent(this, MainActivity.class);
+                                intent.putExtra("show_profile", true);
+                                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                                startActivity(intent);
                             }
                         }
                     } else if (itemId == R.id.nav_lineas) {
-                        Intent intent = new Intent(this, BusesActivity.class);
-                        startActivity(intent);
+                        if (!(this instanceof BusesActivity)) {
+                            if (this instanceof MainActivity) {
+                                // Desde Main simplemente abrimos Buses
+                                startActivity(new Intent(this, BusesActivity.class));
+                            } else {
+                                // Desde otra (ej. Maps), pasamos por Main para limpiar el stack y luego abrir Buses
+                                Intent intent = new Intent(this, MainActivity.class);
+                                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                                intent.putExtra("open_buses", true);
+                                startActivity(intent);
+                            }
+                        }
                     }
 
-                    // Cerramos el menú después de hacer clic
                     if (drawerLayout != null) {
                         drawerLayout.closeDrawer(GravityCompat.START);
                     }
@@ -105,10 +131,9 @@ public abstract class BaseActivity extends AppCompatActivity {
         }
     }
 
-    // Métod movido desde MainActivity
     protected boolean isUserLoggedIn() {
         SharedPreferences prefs = getSharedPreferences("MisPreferencias", MODE_PRIVATE);
-        return prefs.contains("id_usuario"); // true -> hay alguien loggeado
+        return prefs.contains("id_usuario");
     }
 
     private void showSettingsDialog() {
