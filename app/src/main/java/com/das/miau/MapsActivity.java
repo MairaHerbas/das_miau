@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -15,6 +16,8 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.core.graphics.drawable.DrawableCompat;
 import androidx.preference.PreferenceManager;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -311,6 +314,9 @@ public class MapsActivity extends BaseActivity {
         routePolylines.clear();
         routeMarkers.clear();
 
+        // Obtener el color primario de las preferencias
+        int primaryColor = getPrimaryColorInt();
+
         // Mostrar tiempo estimado
         if (durationSec >= 0) {
             int minutes = (int) Math.ceil(durationSec / 60);
@@ -336,19 +342,19 @@ public class MapsActivity extends BaseActivity {
             // Dibujar 3 segmentos con colores distintos
             // Tramo 1: Caminando (Gris)
             addPolyline(segments.get(0), Color.GRAY);
-            // Tramo 2: Autobús (Azul)
-            addPolyline(segments.get(1), Color.BLUE);
+            // Tramo 2: Autobús (Color de preferencias)
+            addPolyline(segments.get(1), primaryColor);
             // Tramo 3: Caminando (Gris)
             addPolyline(segments.get(2), Color.GRAY);
 
-            // Marcadores de paradas
+            // Marcadores de paradas con icono de bus y color de preferencias
             addMarker(new GeoPoint(connection.getOriginStop().getLat(), connection.getOriginStop().getLon()),
                      "Subir: " + connection.getOriginStop().getStopName(), 
-                     "Línea " + connection.getLine());
+                     "Línea " + connection.getLine(), R.drawable.ic_bus, primaryColor);
             
             addMarker(new GeoPoint(connection.getDestinationStop().getLat(), connection.getDestinationStop().getLon()), 
                      "Bajar: " + connection.getDestinationStop().getStopName(), 
-                     "Línea " + connection.getLine());
+                     "Línea " + connection.getLine(), R.drawable.ic_bus, primaryColor);
             
             allPointsForCamera.add(new GeoPoint(connection.getOriginStop().getLat(), connection.getOriginStop().getLon()));
             allPointsForCamera.add(new GeoPoint(connection.getDestinationStop().getLat(), connection.getDestinationStop().getLon()));
@@ -380,7 +386,9 @@ public class MapsActivity extends BaseActivity {
         } else {
             // Ruta única
             if (!segments.isEmpty()) {
-                addPolyline(segments.get(0), Color.BLUE);
+                // Si el modo es bus, usamos el color de preferencias; si no, azul por defecto (o primario también)
+                int routeColor = "bus".equals(transportMode) ? primaryColor : Color.BLUE;
+                addPolyline(segments.get(0), routeColor);
             }
             if (tvLineaNumero != null) tvLineaNumero.setVisibility(View.GONE);
             if (btnInfoDetalles != null) btnInfoDetalles.setVisibility(View.GONE);
@@ -399,7 +407,7 @@ public class MapsActivity extends BaseActivity {
         }
 
         // Marcador Destino Final
-        addMarker(destinationPoint, "Destino: " + (destinoNombre != null ? destinoNombre : ""), "");
+        addMarker(destinationPoint, "Destino: " + (destinoNombre != null ? destinoNombre : ""), "", null, null);
 
         // Ajustar Cámara
         if (!allPointsForCamera.isEmpty()) {
@@ -462,14 +470,39 @@ public class MapsActivity extends BaseActivity {
         routePolylines.add(line);
     }
 
-    private void addMarker(GeoPoint point, String title, String snippet) {
+    private void addMarker(GeoPoint point, String title, String snippet, Integer iconRes, Integer tintColor) {
         Marker m = new Marker(map);
         m.setPosition(point);
         m.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
         m.setTitle(title);
         m.setSnippet(snippet);
+        
+        if (iconRes != null) {
+            Drawable icon = ContextCompat.getDrawable(this, iconRes);
+            if (icon != null) {
+                if (tintColor != null) {
+                    icon = DrawableCompat.wrap(icon.mutate());
+                    DrawableCompat.setTint(icon, tintColor);
+                }
+                m.setIcon(icon);
+            }
+        }
+        
         map.getOverlays().add(m);
         routeMarkers.add(m);
+    }
+
+    private int getPrimaryColorInt() {
+        String colorName = prefManager.getPrimaryColor();
+        int colorRes;
+        switch (colorName) {
+            case "green": colorRes = R.color.green_primary; break;
+            case "red": colorRes = R.color.red_primary; break;
+            case "pink": colorRes = R.color.pink_primary; break;
+            case "purple": colorRes = R.color.purple_primary; break;
+            default: colorRes = R.color.blue_primary; break;
+        }
+        return ContextCompat.getColor(this, colorRes);
     }
 
     private String downloadUrl(String urlString) throws Exception {

@@ -22,13 +22,24 @@ import com.google.android.material.navigation.NavigationView;
 public abstract class BaseActivity extends AppCompatActivity {
     protected PreferencesManager prefManager;
     protected DrawerLayout drawerLayout;
+    private int currentThemeId;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         prefManager = new PreferencesManager(this);
         prefManager.applySettings(this);
-        setTheme(prefManager.getThemeResource());
+        currentThemeId = prefManager.getThemeResource();
+        setTheme(currentThemeId);
         super.onCreate(savedInstanceState);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Verificar si el tema ha cambiado mientras esta actividad estaba en segundo plano
+        if (currentThemeId != prefManager.getThemeResource()) {
+            recreate();
+        }
     }
 
     protected void setupToolbar() {
