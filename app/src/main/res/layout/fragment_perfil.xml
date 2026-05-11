@@ -20,7 +20,7 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
             android:fontFamily="@font/playfair_semibolditalic"
-            android:text="Mi Perfil"
+            android:text="@string/miperfil"
             android:textColor="?attr/colorPrimary"
             android:textSize="28sp"
             android:textStyle="bold" />

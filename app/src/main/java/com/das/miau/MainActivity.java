@@ -160,8 +160,8 @@ public class MainActivity extends BaseActivity {
     }
 
     private void handleIntent(Intent intent) {
-        if (intent != null && intent.getBooleanExtra("show_profile", false)) {
-            //abrir perfil si se solicita
+        if (intent == null) return;
+        if (intent.getBooleanExtra("show_profile", false)) {
             View fragmentContainer = findViewById(R.id.fragment_container);
             View contenidoPrincipal = findViewById(R.id.contenido_principal);
             Toolbar toolbar = findViewById(R.id.toolbar);
@@ -173,6 +173,10 @@ public class MainActivity extends BaseActivity {
                         .commit();
                 if (toolbar != null) toolbar.setTitle(getString(R.string.miperfil));
             }
+            intent.removeExtra("show_profile");
+        } else if (intent.getBooleanExtra("open_buses", false)) {
+            intent.removeExtra("open_buses");
+            startActivity(new Intent(this, BusesActivity.class));
         }
     }
 

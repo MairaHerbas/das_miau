@@ -1,5 +1,7 @@
 package com.das.miau;
 
+import android.content.Context;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -48,7 +50,16 @@ public class BusesAdapter extends RecyclerView.Adapter<BusesAdapter.BusViewHolde
             super(itemView);
             tvLinea = itemView.findViewById(android.R.id.text1);
             tvDestino = itemView.findViewById(android.R.id.text2);
-            tvLinea.setTextColor(0xFF000000); //negro
+            Context context = itemView.getContext();
+            TypedValue typedValue = new TypedValue();
+            context.getTheme().resolveAttribute(android.R.attr.textColorPrimary, typedValue, true);
+            int colorPrincipal;
+            if (typedValue.resourceId != 0) {
+                colorPrincipal = androidx.core.content.ContextCompat.getColor(context, typedValue.resourceId);
+            } else {
+                colorPrincipal = typedValue.data;
+            }
+            tvLinea.setTextColor(colorPrincipal);
             tvLinea.setTextSize(18f);
             tvLinea.setTypeface(null, android.graphics.Typeface.BOLD);
             tvDestino.setTextColor(0xFF666666); //gris oscuro

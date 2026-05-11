@@ -10,8 +10,7 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:background="#F5F5F5">
+        android:orientation="vertical">
 
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar"
@@ -29,14 +28,14 @@
             android:textSize="24sp"
             android:textStyle="bold"
             android:padding="16dp"
-            android:textColor="@color/black" />
+            android:textColor="?android:attr/textColorPrimary" />
 
         <com.google.android.material.tabs.TabLayout
             android:id="@+id/tab_layout_redes"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:tabIndicatorColor="#82019A"
-            app:tabSelectedTextColor="#E074F1">
+            app:tabIndicatorColor="?android:attr/colorPrimaryDark"
+            app:tabSelectedTextColor="?android:attr/colorPrimary">
 
             <com.google.android.material.tabs.TabItem
                 android:layout_width="wrap_content"
