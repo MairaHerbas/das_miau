@@ -1,0 +1,342 @@
+@startuml
+class com.das.miau.RutaBus {
+- String idRuta
+- String nombreCorto
+- String nombreLargo
++ String getIdRuta()
++ String getNombreCorto()
++ String getNombreLargo()
+}
+
+
+class com.das.miau.MainActivity {
+- TextView tvCityName
+- TextView tvTop1
+- FusedLocationProviderClient fusedLocationClient
+- ExecutorService executorService
+# void onCreate(Bundle)
+- void fetchTopRanking()
+# void onNewIntent(Intent)
+- void handleIntent(Intent)
+- void checkPermissionsAndGetLocation()
+- void getLastLocation()
+- String getNearestCity(double,double)
+- void fetchWeather(String)
+- void updateUI(String,String,String,String)
++ void onRequestPermissionsResult(int,String[],int[])
+}
+
+
+class com.das.miau.ConexionBDWebService {
++ Result doWork()
+}
+
+class com.das.miau.BusesAdapter {
+- List<RutaBus> listaRutas
++ void setRutas(List<RutaBus>)
++ BusViewHolder onCreateViewHolder(ViewGroup,int)
++ void onBindViewHolder(BusViewHolder,int)
++ int getItemCount()
+}
+
+
+class com.das.miau.BusesAdapter$BusViewHolder {
+~ TextView tvLinea
+}
+
+class com.das.miau.DestinosAdapter {
+- List<CentroUniversitario> destinos
+- OnDestinoClickListener listener
++ DestinoViewHolder onCreateViewHolder(ViewGroup,int)
++ void onBindViewHolder(DestinoViewHolder,int)
++ int getItemCount()
+}
+
+
+interface com.das.miau.DestinosAdapter$OnDestinoClickListener {
+~ void onDestinoClick(CentroUniversitario)
+}
+
+class com.das.miau.DestinosAdapter$DestinoViewHolder {
+~ TextView tvNombre
+}
+
+class com.das.miau.DestinosActivity {
+- String transportMode
+# void onCreate(Bundle)
+- List<CentroUniversitario> getListaCentros()
+}
+
+
+class com.das.miau.PerfilFragment {
+- ImageView imgPerfil
+- EditText etNombreCompleto
+- Spinner spinnerFacultad
+- TextView tvMisPuntos
+- Uri uriImagen
+- ActivityResultLauncher<Intent> takePictureLauncher
+- Bitmap bitmapFotoActual
+- ActivityResultLauncher<String> pedirPermisoCamara
+- String idUsuario
+- List<Integer> listaIdsFacultades
+- {static} String TAG
++ View onCreateView(LayoutInflater,ViewGroup,Bundle)
+- void abrirCamara()
+- void descargarFacultades(int)
+- void subirPerfilAlServidor()
+- void cerrarSesion()
+}
+
+
+class com.das.miau.DatabaseHelper {
+- {static} String TAG
+- {static} String DB_NAME
+- {static} int DB_VERSION
+- Context context
+- SQLiteDatabase database
+- void copiarBaseDeDatosSiNoExiste()
++ void openDatabase()
+- void crearIndices()
++ void close()
++ void onCreate(SQLiteDatabase)
++ void onUpgrade(SQLiteDatabase,int,int)
+- double parseDirtyCoordinate(String)
+- String normalizeLine(String)
+- long getGtfSeconds(String)
+- long[] getTripTiming(String,String,String,String,long,long)
++ List<Long> getNextDepartures(String,String,String,String,long)
++ List<NearbyStop> getNearbyStops(double,double)
++ List<String> getLinesForStop(String,String)
+- boolean isCorrectDirection(String,String,String,String)
++ BusConnection findBusConnection(double,double,double,double)
++ List<RutaBus> getLineasBilbobus()
++ List<RutaBus> getLineasBizkaibus()
++ String getShapeIdForConnection(String,String,String,String)
++ List<GeoPoint> getShapePoints(String,String)
++ List<GeoPoint> getTrimmedShape(String,BusStop,BusStop,String)
+- float getFastDistanceMeters(double,double,double,double)
+- float getDistance(double,double,GeoPoint)
++ double getBusDuration(String,String,String,String)
+}
+
+
+class com.das.miau.DatabaseHelper$NearbyStop {
+~ BusStop stop
+~ float distance
+}
+
+class com.das.miau.DatabaseHelper$CandidateConnection {
+~ BusStop originStop
+~ BusStop destinationStop
+~ float originDistance
+~ float destinationDistance
+~ float totalDistance
+}
+
+class com.das.miau.RouteOption {
+~ BusConnection connection
+~ double totalTime
+}
+
+class com.das.miau.BusConnection {
+- String line
+- BusStop originStop
+- BusStop destinationStop
+- double totalTimeSec
+- double walkToOriginSec
+- double waitTimeSec
+- double rideTimeSec
+- double walkToDestSec
+- float walkOriginMeters
+- float walkDestMeters
+- List<Long> nextDeparturesMin
++ String getLine()
++ BusStop getOriginStop()
++ BusStop getDestinationStop()
++ double getTotalTimeSec()
++ void setTotalTimeSec(double)
++ double getWalkToOriginSec()
++ void setWalkToOriginSec(double)
++ double getWaitTimeSec()
++ void setWaitTimeSec(double)
++ double getRideTimeSec()
++ void setRideTimeSec(double)
++ double getWalkToDestSec()
++ void setWalkToDestSec(double)
++ float getWalkOriginMeters()
++ void setWalkOriginMeters(float)
++ float getWalkDestMeters()
++ void setWalkDestMeters(float)
++ List<Long> getNextDeparturesMin()
++ void setNextDeparturesMin(List<Long>)
+}
+
+
+class com.das.miau.BusesActivity {
+- RecyclerView recyclerRutas
+- BusesAdapter adapter
+- DatabaseHelper dbHelper
+- TabLayout tabLayout
+# void onCreate(Bundle)
+}
+
+
+class com.das.miau.MapsActivity {
+- MapView map
+- MyLocationNewOverlay locationOverlay
+- FusedLocationProviderClient fusedLocationClient
+- String transportMode
+- String destinoNombre
+- double destinoLat
+- GeoPoint userLocation
+- ExecutorService executorService
+- Handler mainHandler
+- List<Polyline> routePolylines
+- List<Marker> routeMarkers
+- TextView tvDestinoCard
+- ImageView btnInfoDetalles
+- DatabaseHelper dbHelper
+- BusConnection lastConnection
+- android.widget.Button btnHacerRuta
+- SharedPreferences prefs
+- int duracionMinutosRutaActual
+# void onCreate(Bundle)
+- void initLocation()
+- void calculateRoute(GeoPoint)
+- void processRouteResult(BusConnection,GeoPoint)
+- RouteResult fetchOSRMRoute(GeoPoint,GeoPoint,String)
+- void updateUI(List<List<GeoPoint>>,GeoPoint,BusConnection,double)
+- void showRouteDetailsBottomSheet(BusConnection)
+- void addPolyline(List<GeoPoint>,int)
+- void addMarker(GeoPoint,String,String,Integer,Integer)
+- int getPrimaryColorInt()
+- String downloadUrl(String)
+- void showToast(String)
+- void hacerRuta()
+- void mostrarDialogoDeshacer()
+- void sumarPuntosEnBD(int)
+}
+
+
+class com.das.miau.MapsActivity$RouteResult {
+~ List<GeoPoint> points
+~ double duration
+}
+
+abstract class com.das.miau.BaseActivity {
+# PreferencesManager prefManager
+# DrawerLayout drawerLayout
+- int currentThemeId
+# void onCreate(Bundle)
+# void onResume()
+# void setupToolbar()
+# boolean isUserLoggedIn()
+- void showSettingsDialog()
+}
+
+
+class com.das.miau.RegistroActivity {
+- ImageView imgPerfil
+- EditText etNombre
+- Spinner spinnerFacultad
+- Bitmap bitmapFotoActual
+- Uri uriImagen
+- ActivityResultLauncher<Intent> takePictureLauncher
+- ActivityResultLauncher<String> pedirPermisoCamara
+# void onCreate(Bundle)
+- void descargarFacultades()
+- void abrirCamara()
+- void procesarFotoTomada()
+- void validarYRegistrar()
+- void enviarDatosServidor(String,String,String,String,int)
+}
+
+
+class com.das.miau.BusStop {
+- String stopId
+- String stopName
+- double lat
+- double lon
+- List<String> lines
+- String network
++ String getStopId()
++ String getStopName()
++ double getLat()
++ double getLon()
++ List<String> getLines()
++ void setLines(List<String>)
++ String getNetwork()
++ void setNetwork(String)
+}
+
+
+class com.das.miau.CentroUniversitario {
+- String nombre
+- String ubicacion
+- double latitud
+- double longitud
++ String getNombre()
++ String getUbicacion()
++ double getLatitud()
++ double getLongitud()
+}
+
+
+class com.das.miau.TransportActivity {
+# void onCreate(Bundle)
+- void startDestinosWithMode(String)
+}
+
+class com.das.miau.PreferencesManager {
+- {static} String PREF_NAME
+- {static} String KEY_LANGUAGE
+- {static} String KEY_THEME_MODE
+- {static} String KEY_PRIMARY_COLOR
+- SharedPreferences pref
+- SharedPreferences.Editor editor
++ void setLanguage(String)
++ String getLanguage()
++ void setThemeMode(String)
++ String getThemeMode()
++ void setPrimaryColor(String)
++ String getPrimaryColor()
++ void applySettings(Context)
++ int getThemeResource()
+}
+
+
+class com.das.miau.LoginRegistroActivity {
+- EditText usuario
+- EditText contrasena
+- Button btnEntrar
+- {static} String TAG
+# void onCreate(Bundle)
+- void lanzarWorker(String)
+- void procesarResultado(String)
+}
+
+
+
+
+com.das.miau.BaseActivity <|-- com.das.miau.MainActivity
+androidx.work.Worker <|-- com.das.miau.ConexionBDWebService
+com.das.miau.Adapter <|-- com.das.miau.BusesAdapter
+com.das.miau.BusesAdapter +.. com.das.miau.BusesAdapter$BusViewHolder
+com.das.miau.ViewHolder <|-- com.das.miau.BusesAdapter$BusViewHolder
+com.das.miau.Adapter <|-- com.das.miau.DestinosAdapter
+com.das.miau.DestinosAdapter +.. com.das.miau.DestinosAdapter$OnDestinoClickListener
+com.das.miau.DestinosAdapter +.. com.das.miau.DestinosAdapter$DestinoViewHolder
+com.das.miau.ViewHolder <|-- com.das.miau.DestinosAdapter$DestinoViewHolder
+com.das.miau.BaseActivity <|-- com.das.miau.DestinosActivity
+androidx.fragment.app.Fragment <|-- com.das.miau.PerfilFragment
+android.database.sqlite.SQLiteOpenHelper <|-- com.das.miau.DatabaseHelper
+com.das.miau.DatabaseHelper +.. com.das.miau.DatabaseHelper$NearbyStop
+com.das.miau.DatabaseHelper +.. com.das.miau.DatabaseHelper$CandidateConnection
+com.das.miau.BaseActivity <|-- com.das.miau.BusesActivity
+com.das.miau.BaseActivity <|-- com.das.miau.MapsActivity
+com.das.miau.MapsActivity +.. com.das.miau.MapsActivity$RouteResult
+androidx.appcompat.app.AppCompatActivity <|-- com.das.miau.BaseActivity
+androidx.appcompat.app.AppCompatActivity <|-- com.das.miau.RegistroActivity
+com.das.miau.BaseActivity <|-- com.das.miau.TransportActivity
+androidx.appcompat.app.AppCompatActivity <|-- com.das.miau.LoginRegistroActivity
+@enduml
